@@ -14,7 +14,7 @@ import {
 import { useApp } from '../../context/AppContext';
 
 export const SettingsPage: React.FC = () => {
-  const { settings, updateSettings } = useApp();
+  const { settings, updateSettings, resetDatabaseToCleanState, currentUser } = useApp();
 
   const [schoolName, setSchoolName] = useState(settings.schoolName);
   const [motto, setMotto] = useState(settings.motto);
@@ -235,19 +235,48 @@ export const SettingsPage: React.FC = () => {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs">
           <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-            <strong className="text-slate-800 block">Super Admin</strong>
-            <span className="text-slate-500 text-[11px]">Unrestricted access to all 5 educational tiers, bursary, and settings.</span>
+            <strong className="text-slate-800 block">GetoCore Central Admin</strong>
+            <span className="text-slate-500 text-[11px]">Worldwide institutional onboarding, license keys, and tier lock provisioning.</span>
           </div>
           <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-            <strong className="text-slate-800 block">Principals & Deans</strong>
-            <span className="text-slate-500 text-[11px]">Manage curricula, student admissions, CBT tests, and sign transcripts.</span>
+            <strong className="text-slate-800 block">School Super Admin</strong>
+            <span className="text-slate-500 text-[11px]">Unrestricted school setup, creates logins for teachers, bursars, and enrolled students.</span>
           </div>
           <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-            <strong className="text-slate-800 block">Parent Portal User</strong>
-            <span className="text-slate-500 text-[11px]">Track wards' live CA/Exams, view attendance, pay ₦ fees, and message teachers.</span>
+            <strong className="text-slate-800 block">Faculty & Teachers</strong>
+            <span className="text-slate-500 text-[11px]">Curriculum delivery, CA1/CA2/Exam scores entry, and psychomotor rating.</span>
           </div>
         </div>
       </div>
+
+      {/* Clean Production State Manager */}
+      {(currentUser?.role === 'super_admin' || currentUser?.role === 'getocore_admin') && (
+        <div className="bg-rose-50/60 p-6 rounded-2xl border border-rose-200 shadow-xs">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h3 className="text-sm font-bold text-rose-950 flex items-center">
+                <Lock className="w-4 h-4 text-rose-700 mr-2" />
+                Production Clean State & Database Reset
+              </h3>
+              <p className="text-xs text-rose-800 mt-1 max-w-xl">
+                Purge all temporary student rosters, fee invoices, grades, and test submissions from this device's local database cache to ensure a completely clean slate for school onboarding.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                if (confirm("Are you sure you want to reset the database to a completely clean state for school onboarding? All local demo records will be purged.")) {
+                  resetDatabaseToCleanState();
+                  alert("Database successfully reset to clean production state!");
+                }
+              }}
+              className="px-4 py-2.5 bg-rose-700 hover:bg-rose-800 text-white rounded-xl text-xs font-semibold shrink-0 shadow-sm transition-all"
+            >
+              Reset to Clean State
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Infrastructure & Software Attribution */}
       <div className="bg-gradient-to-r from-slate-900 via-slate-950 to-emerald-950 p-6 rounded-2xl text-white shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">

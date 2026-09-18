@@ -87,7 +87,7 @@ export const ClassManagementPage: React.FC = () => {
     setGradeLevel(c.gradeLevel);
     setArmOrStream(c.armOrStream);
     setCapacity(c.capacity);
-    setFormTeacherId(c.formTeacherId);
+    setFormTeacherId(c.formTeacherId || '');
     setClassroomBlock(c.classroomBlock);
     setClassPrefect(c.classPrefect || '');
     setShowAddModal(true);
@@ -104,8 +104,8 @@ export const ClassManagementPage: React.FC = () => {
         gradeLevel,
         armOrStream,
         capacity: Number(capacity),
-        formTeacherId: assignedStaff.id,
-        formTeacherName: assignedStaff.name,
+        formTeacherId: assignedStaff ? assignedStaff.id : '',
+        formTeacherName: assignedStaff ? assignedStaff.name : 'Unassigned',
         classroomBlock,
         classPrefect
       });
@@ -117,8 +117,8 @@ export const ClassManagementPage: React.FC = () => {
         armOrStream,
         capacity: Number(capacity),
         enrolledCount: 0,
-        formTeacherId: assignedStaff.id,
-        formTeacherName: assignedStaff.name,
+        formTeacherId: assignedStaff ? assignedStaff.id : '',
+        formTeacherName: assignedStaff ? assignedStaff.name : 'Unassigned',
         classroomBlock,
         classPrefect,
         status: 'active'

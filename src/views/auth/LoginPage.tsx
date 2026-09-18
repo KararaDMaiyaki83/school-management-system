@@ -22,76 +22,29 @@ import { ForgotPasswordModal } from './ForgotPasswordModal';
 
 export const LoginPage: React.FC = () => {
   const { login, settings } = useApp();
-  const [identifier, setIdentifier] = useState('admin@apexroyal.edu.ng');
+  const [identifier, setIdentifier] = useState('central.admin@getocore.com');
   const [password, setPassword] = useState('••••••••');
   const [showPassword, setShowPassword] = useState(false);
   const [showForgotModal, setShowForgotModal] = useState(false);
-  const [selectedDemoRole, setSelectedDemoRole] = useState<string>('usr_admin');
+  const [selectedDemoRole, setSelectedDemoRole] = useState<string>('usr_getocore_admin');
   const [errorMessage, setErrorMessage] = useState('');
 
-  const demoAccounts = [
+  const administrativeAccounts = [
     {
       id: 'usr_getocore_admin',
-      roleName: 'GetoCore Super Admin',
-      sub: 'Worldwide SaaS HQ & All Schools',
+      roleName: 'GetoCore Central Admin',
+      sub: 'Global HQ & Multi-School Licensing',
       icon: Globe,
-      color: 'bg-gradient-to-r from-emerald-800 to-teal-800 text-white hover:from-emerald-700 hover:to-teal-700 ring-1 ring-emerald-500/40'
+      color: 'bg-gradient-to-r from-emerald-800 to-teal-800 text-white hover:from-emerald-700 hover:to-teal-700 ring-1 ring-emerald-500/40',
+      email: 'central.admin@getocore.com'
     },
     {
       id: 'usr_admin',
-      roleName: 'Super Admin',
-      sub: 'Global Management',
+      roleName: 'School Super Admin',
+      sub: 'Principal & Institutional Setup',
       icon: ShieldCheck,
-      color: 'bg-emerald-700 text-white hover:bg-emerald-800'
-    },
-    {
-      id: 'usr_prim_head',
-      roleName: 'Primary Head',
-      sub: 'Nursery & Basic 1-6',
-      icon: BookOpen,
-      color: 'bg-amber-600 text-white hover:bg-amber-700'
-    },
-    {
-      id: 'usr_jss_head',
-      roleName: 'Junior Sec Principal',
-      sub: 'JSS 1-3 & BECE',
-      icon: Award,
-      color: 'bg-cyan-700 text-white hover:bg-cyan-800'
-    },
-    {
-      id: 'usr_sss_head',
-      roleName: 'Senior Sec Principal',
-      sub: 'SSS 1-3 & WAEC/NECO',
-      icon: GraduationCap,
-      color: 'bg-indigo-700 text-white hover:bg-indigo-800'
-    },
-    {
-      id: 'usr_dean',
-      roleName: 'Tertiary Dean',
-      sub: '100L-500L & 5.0 CGPA',
-      icon: Users,
-      color: 'bg-blue-800 text-white hover:bg-blue-900'
-    },
-    {
-      id: 'usr_student',
-      roleName: 'Student Portal',
-      sub: 'SSS 3 & CBT Candidate',
-      icon: MonitorPlay,
-      color: 'bg-purple-700 text-white hover:bg-purple-800'
-    },
-    {
-      id: 'usr_parent',
-      roleName: 'Parent Portal',
-      sub: 'Ward Monitoring System',
-      icon: HeartHandshake,
-      color: 'bg-rose-700 text-white hover:bg-rose-800'
-    },
-    {
-      id: 'usr_bursar',
-      roleName: 'Chief Bursar',
-      sub: '₦ Fee Invoices & Receipts',
-      icon: Coins,
-      color: 'bg-teal-700 text-white hover:bg-teal-800'
+      color: 'bg-emerald-700 text-white hover:bg-emerald-800',
+      email: 'admin@apexroyal.edu.ng'
     }
   ];
 
@@ -101,12 +54,18 @@ export const LoginPage: React.FC = () => {
       setErrorMessage('Please enter your email, Staff ID, or Matric Number.');
       return;
     }
-    login(identifier);
+    setErrorMessage('');
+    const success = login(identifier.trim());
+    if (!success) {
+      setErrorMessage('Invalid credentials or unregistered account. Only GetoCore Central Admin, School Super Admins, and officially enrolled school personnel can sign in.');
+    }
   };
 
-  const handleQuickLogin = (demoId: string) => {
-    setSelectedDemoRole(demoId);
-    login(demoId);
+  const handleQuickLogin = (adminId: string, email: string) => {
+    setSelectedDemoRole(adminId);
+    setIdentifier(email);
+    setErrorMessage('');
+    login(adminId);
   };
 
   return (
@@ -214,46 +173,55 @@ export const LoginPage: React.FC = () => {
             </p>
           </div>
 
-          {/* Quick Demo 1-Click Role Switcher */}
+          {/* Authorized Administrative Access */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                1-Click Quick Demo Sign-In
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-700 mr-1.5" />
+                Administrative Access Only
               </span>
-              <span className="text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-md">
-                Select Any Role
+              <span className="text-[11px] text-emerald-800 font-semibold bg-emerald-100/70 px-2 py-0.5 rounded-md">
+                School Onboarding
               </span>
             </div>
             
-            <div className="grid grid-cols-2 gap-2">
-              {demoAccounts.map((acc) => {
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {administrativeAccounts.map((acc) => {
                 const Icon = acc.icon;
                 const isSelected = selectedDemoRole === acc.id;
                 return (
                   <button
                     key={acc.id}
                     type="button"
-                    onClick={() => handleQuickLogin(acc.id)}
-                    className={`flex items-center p-2.5 rounded-xl border text-left transition-all ${
+                    onClick={() => handleQuickLogin(acc.id, acc.email)}
+                    className={`flex items-center p-3 rounded-xl border text-left transition-all ${
                       isSelected 
                         ? 'border-emerald-600 bg-emerald-50/70 shadow-sm ring-1 ring-emerald-600' 
                         : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                     }`}
                   >
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mr-2.5 ${acc.color}`}>
-                      <Icon className="w-4 h-4" />
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 mr-2.5 ${acc.color}`}>
+                      <Icon className="w-5 h-5" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="text-xs font-bold text-slate-800 truncate">{acc.roleName}</div>
+                      <div className="text-xs font-bold text-slate-900 truncate">{acc.roleName}</div>
                       <div className="text-[10px] text-slate-500 truncate">{acc.sub}</div>
                     </div>
                   </button>
                 );
               })}
             </div>
+
+            {/* School Onboarding Notice */}
+            <div className="mt-3 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[11px] text-slate-600 flex items-start space-x-2">
+              <Lock className="w-3.5 h-3.5 text-emerald-700 shrink-0 mt-0.5" />
+              <span>
+                Standard student, parent, and teacher demo logins have been closed. School Super Admins create and issue login credentials for their staff, teachers, and enrolled students.
+              </span>
+            </div>
           </div>
 
-          <div className="relative my-6">
+          <div className="relative my-5">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-slate-200"></div>
             </div>

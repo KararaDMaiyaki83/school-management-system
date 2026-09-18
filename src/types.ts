@@ -54,8 +54,8 @@ export interface ClassArm {
   armOrStream: string; // "Gold", "Arm A", "Science Stream", "Department of Computer Science"
   capacity: number;
   enrolledCount: number;
-  formTeacherId: string;
-  formTeacherName: string;
+  formTeacherId?: string;
+  formTeacherName?: string;
   classroomBlock: string;
   classPrefect?: string;
   status: 'active' | 'archived';

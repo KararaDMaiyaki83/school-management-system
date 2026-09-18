@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { 
   User, 
+  UserRole,
   EducationalTier, 
   Student, 
   StaffMember, 
@@ -147,6 +148,9 @@ interface AppContextType {
     gateway?: 'paystack' | 'flutterwave' | 'remita' | 'moniepoint' | 'bank_transfer' | 'pos', 
     customRef?: string
   ) => void;
+  users: User[];
+  addUser: (user: User) => void;
+  resetDatabaseToCleanState: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -215,6 +219,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [settings, setSettings] = useState<SchoolSettings>(initialSettings);
   const [selectedWardId, setSelectedWardId] = useState<string>('std_01');
 
+  const [users, setUsers] = useState<User[]>(() => {
+    const saved = safeGetItem('edusphere_users');
+    return saved ? JSON.parse(saved) : mockUsers;
+  });
+
   // Multi-Tenant Global Schools & SaaS State
   const [tenantSchools, setTenantSchools] = useState<TenantSchool[]>(() => {
     const saved = safeGetItem('edusphere_tenant_schools');
@@ -243,6 +252,42 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [globalMetrics] = useState<GlobalSaaSMetrics>(mockGlobalSaaSMetrics);
 
+  // Production Clean Database State Initializer (Purges cached demo data)
+  useEffect(() => {
+    const DB_CLEAN_VERSION = 'getocore_clean_prod_v2';
+    const currentVer = safeGetItem('edusphere_db_version');
+    if (currentVer !== DB_CLEAN_VERSION) {
+      safeSetItem('edusphere_db_version', DB_CLEAN_VERSION);
+      safeSetItem('edusphere_students', JSON.stringify([]));
+      safeSetItem('edusphere_grades', JSON.stringify([]));
+      safeSetItem('edusphere_invoices', JSON.stringify([]));
+      safeSetItem('edusphere_cbt_submissions', JSON.stringify([]));
+      safeSetItem('edusphere_cbt', JSON.stringify([]));
+      safeSetItem('edusphere_community_posts', JSON.stringify([]));
+      safeSetItem('edusphere_bursary_proofs', JSON.stringify([]));
+      safeSetItem('edusphere_bursary_messages', JSON.stringify([]));
+      safeSetItem('edusphere_users', JSON.stringify(mockUsers));
+      safeSetItem('edusphere_staff', JSON.stringify(mockStaff));
+      safeSetItem('edusphere_classes', JSON.stringify(mockClasses));
+      safeSetItem('edusphere_subjects', JSON.stringify(mockSubjects));
+      safeSetItem('edusphere_announcements', JSON.stringify(mockAnnouncements));
+
+      setStudents([]);
+      setGrades([]);
+      setInvoices([]);
+      setCbtSubmissions([]);
+      setCbtExams([]);
+      setCommunityPosts([]);
+      setBursaryProofTickets([]);
+      setBursaryMessages([]);
+      setUsers(mockUsers);
+      setStaff(mockStaff);
+      setClasses(mockClasses);
+      setSubjects(mockSubjects);
+      setAnnouncements(mockAnnouncements);
+    }
+  }, []);
+
   // Persistence effects
   useEffect(() => {
     if (currentUser) {
@@ -251,6 +296,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       safeRemoveItem('edusphere_user');
     }
   }, [currentUser]);
+
+  useEffect(() => {
+    safeSetItem('edusphere_users', JSON.stringify(users));
+  }, [users]);
 
   useEffect(() => {
     safeSetItem('edusphere_license', JSON.stringify(licenseConfig));
@@ -351,7 +400,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       id: newId,
       stats: {
         totalStudents: 0,
-        totalStaff: 0,
+        totalStaff: 1,
         totalClasses: 0,
         activeSession: '2026/2027',
         totalRevenueCollected: 0
@@ -359,6 +408,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       createdAt: new Date().toISOString().split('T')[0]
     };
     setTenantSchools(prev => [newSchool, ...prev]);
+
+    // Automatically provision the School Super Admin account for this newly onboarded school
+    const schoolAdminUser: User = {
+      id: `usr_${newSchool.slug}_admin`,
+      name: `Administrator - ${newSchool.name}`,
+      email: newSchool.primaryEmail,
+      role: 'super_admin',
+      tier: 'all',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+      identifierId: `${newSchool.slug.toUpperCase().slice(0, 4)}-ADM-01`,
+      officeTitle: `Principal / Super Admin (${newSchool.name})`
+    };
+    setUsers(prev => [schoolAdminUser, ...prev.filter(u => u.email.toLowerCase() !== schoolAdminUser.email.toLowerCase())]);
   };
 
   const updateTenantStatus = (tenantId: string, status: 'active' | 'trial' | 'past_due' | 'suspended') => {
@@ -405,7 +467,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const login = (userIdOrRole: string): boolean => {
-    const found = mockUsers.find(u => u.id === userIdOrRole || u.role === userIdOrRole || u.email === userIdOrRole);
+    const query = userIdOrRole.trim().toLowerCase();
+    const found = users.find(u => 
+      u.id.toLowerCase() === query || 
+      u.email.toLowerCase() === query || 
+      u.role.toLowerCase() === query ||
+      (u.identifierId && u.identifierId.toLowerCase() === query)
+    ) || mockUsers.find(u => 
+      u.id.toLowerCase() === query || 
+      u.email.toLowerCase() === query || 
+      u.role.toLowerCase() === query ||
+      (u.identifierId && u.identifierId.toLowerCase() === query)
+    );
+
     if (found) {
       setCurrentUser(found);
       if (found.role === 'getocore_admin') {
@@ -424,17 +498,42 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
       return true;
     }
-    const fallbackUser: User = {
-      id: `usr_${Date.now()}`,
-      name: userIdOrRole.split('@')[0].toUpperCase(),
-      email: userIdOrRole,
-      role: 'super_admin',
-      tier: 'all',
-      identifierId: 'ADMIN-TEMP'
-    };
-    setCurrentUser(fallbackUser);
-    setActivePage('overview');
-    return true;
+    return false;
+  };
+
+  const resetDatabaseToCleanState = () => {
+    safeSetItem('edusphere_db_version', 'getocore_clean_prod_v2');
+    safeSetItem('edusphere_students', JSON.stringify([]));
+    safeSetItem('edusphere_grades', JSON.stringify([]));
+    safeSetItem('edusphere_invoices', JSON.stringify([]));
+    safeSetItem('edusphere_cbt_submissions', JSON.stringify([]));
+    safeSetItem('edusphere_cbt', JSON.stringify([]));
+    safeSetItem('edusphere_community_posts', JSON.stringify([]));
+    safeSetItem('edusphere_bursary_proofs', JSON.stringify([]));
+    safeSetItem('edusphere_bursary_messages', JSON.stringify([]));
+    safeSetItem('edusphere_users', JSON.stringify(mockUsers));
+    safeSetItem('edusphere_staff', JSON.stringify(mockStaff));
+    safeSetItem('edusphere_classes', JSON.stringify(mockClasses));
+    safeSetItem('edusphere_subjects', JSON.stringify(mockSubjects));
+    safeSetItem('edusphere_announcements', JSON.stringify(mockAnnouncements));
+
+    setStudents([]);
+    setGrades([]);
+    setInvoices([]);
+    setCbtSubmissions([]);
+    setCbtExams([]);
+    setCommunityPosts([]);
+    setBursaryProofTickets([]);
+    setBursaryMessages([]);
+    setUsers(mockUsers);
+    setStaff(mockStaff);
+    setClasses(mockClasses);
+    setSubjects(mockSubjects);
+    setAnnouncements(mockAnnouncements);
+  };
+
+  const addUser = (newUser: User) => {
+    setUsers(prev => [newUser, ...prev.filter(u => u.email.toLowerCase() !== newUser.email.toLowerCase())]);
   };
 
   const logout = () => {
@@ -487,8 +586,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Staff Management CRUD (Office of Registrar / HR)
   const addStaff = (newStaffMember: Omit<StaffMember, 'id'>) => {
-    const staffMember: StaffMember = { ...newStaffMember, id: `stf_${Date.now()}` };
+    const staffId = `stf_${Date.now()}`;
+    const staffMember: StaffMember = { ...newStaffMember, id: staffId };
     setStaff(prev => [staffMember, ...prev]);
+
+    // Automatically provision user credentials for newly added staff member
+    let role: UserRole = 'teacher_lecturer';
+    const rLower = newStaffMember.role.toLowerCase();
+    if (rLower.includes('principal') || rLower.includes('head') || rLower.includes('director') || rLower.includes('dean')) {
+      role = 'principal_head';
+    } else if (rLower.includes('bursar') || rLower.includes('account') || rLower.includes('finance')) {
+      role = 'bursar';
+    } else {
+      role = 'teacher_lecturer';
+    }
+
+    const newUser: User = {
+      id: `usr_${staffId}`,
+      name: newStaffMember.name,
+      email: newStaffMember.email,
+      role: role,
+      tier: newStaffMember.tier,
+      identifierId: newStaffMember.staffId,
+      phone: newStaffMember.phone,
+      officeTitle: newStaffMember.officeJurisdiction || newStaffMember.role
+    };
+    setUsers(prev => [newUser, ...prev.filter(u => u.email.toLowerCase() !== newUser.email.toLowerCase())]);
   };
 
   const updateStaff = (id: string, updates: Partial<StaffMember>) => {
@@ -785,7 +908,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         submitPaymentProof,
         verifyPaymentProof,
         sendParentBursaryMessage,
-        recordConsolidatedFamilyPayment
+        recordConsolidatedFamilyPayment,
+        users,
+        addUser,
+        resetDatabaseToCleanState
       }}
     >
       {children}
