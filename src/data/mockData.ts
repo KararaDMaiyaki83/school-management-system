@@ -1,0 +1,2001 @@
+import { 
+  Student, 
+  StaffMember, 
+  SubjectOrCourse, 
+  GradeRecord, 
+  InvoiceRecord, 
+  Announcement, 
+  CBTExam, 
+  CBTSubmission,
+  SchoolSettings,
+  User,
+  AlumniProfile,
+  CommunityPost,
+  ClassArm,
+  GetoCoreLicenseConfig,
+  TenantSchool,
+  GlobalSaaSMetrics,
+  GlobalBroadcastNotice,
+  BursaryPaymentProofTicket,
+  ParentBursaryMessage
+} from '../types';
+
+export const initialSettings: SchoolSettings = {
+  schoolName: "Apex Royal Academy & Polytechnic College",
+  motto: "Knowledge, Character, and Innovation for the Nation",
+  address: "Plot 14 Independence Way, Central Academic Zone, Abuja, FCT",
+  email: "admin@apexroyal.edu.ng",
+  phone: "+234 803 555 0199 / +234 812 400 8800",
+  currentSession: "2026/2027",
+  currentTermOrSemester: "First Term / Harmattan Semester",
+  currencySymbol: "₦",
+  currencyCode: "NGN",
+  tertiaryGradingSystem: "5.0_scale"
+};
+
+export const mockUsers: User[] = [
+  {
+    id: "usr_getocore_admin",
+    name: "Engr. Farouk Bello (GetoCore Lead)",
+    email: "central.admin@getocore.com",
+    role: "getocore_admin",
+    tier: "all",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+    identifierId: "GETO-HQ-01",
+    officeTitle: "GetoCore Digital Innovation - Central Licensing Authority"
+  },
+  {
+    id: "usr_admin",
+    name: "Dr. Aliyu Mohammed",
+    email: "admin@apexroyal.edu.ng",
+    role: "super_admin",
+    tier: "all",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+    identifierId: "SUPER-001",
+    officeTitle: "Office of the Director General / Head of School"
+  },
+  {
+    id: "usr_prim_head",
+    name: "Mrs. Folashade Adeleke",
+    email: "primary.head@apexroyal.edu.ng",
+    role: "principal_head",
+    tier: "primary",
+    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
+    identifierId: "PR-HEAD-01"
+  },
+  {
+    id: "usr_jss_head",
+    name: "Mr. Obinna Nnamdi",
+    email: "jss.principal@apexroyal.edu.ng",
+    role: "principal_head",
+    tier: "junior_sec",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+    identifierId: "JSS-PR-02"
+  },
+  {
+    id: "usr_sss_head",
+    name: "Dr. Abdullahi Umar",
+    email: "sss.principal@apexroyal.edu.ng",
+    role: "principal_head",
+    tier: "senior_sec",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+    identifierId: "SSS-PR-03"
+  },
+  {
+    id: "usr_dean",
+    name: "Prof. Kingsley Ogbonna",
+    email: "dean.computing@apexroyal.edu.ng",
+    role: "teacher_lecturer",
+    tier: "tertiary",
+    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80",
+    identifierId: "UNI-DEAN-09"
+  },
+  {
+    id: "usr_bursar",
+    name: "Alhaji Rasheed Salami (FCA)",
+    email: "bursar@apexroyal.edu.ng",
+    role: "bursar",
+    tier: "all",
+    avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80",
+    identifierId: "BURSAR-001"
+  },
+  {
+    id: "usr_parent",
+    name: "Chief Oladipo Adeleke",
+    email: "parent.adeleke@gmail.com",
+    role: "parent",
+    phone: "+234 802 333 4455",
+    avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150&auto=format&fit=crop&q=80",
+    identifierId: "PAR-NG-8891",
+    wardIds: ["std_01", "std_04"] // Chidinma (Primary) & Tunde (SSS 3)
+  },
+  {
+    id: "usr_student",
+    name: "Tunde Bakare",
+    email: "tunde.bakare@student.apexroyal.edu.ng",
+    role: "student",
+    tier: "senior_sec",
+    avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80",
+    identifierId: "SSS/25/089"
+  }
+];
+
+export const mockStudents: Student[] = [
+  // Primary
+  {
+    id: "std_01",
+    admissionNo: "EDU/PRI/2024/042",
+    firstName: "Chidinma",
+    lastName: "Adeleke",
+    gender: "Female",
+    dob: "2016-04-12",
+    tier: "primary",
+    classOrDept: "Primary 4",
+    armOrStream: "Emerald Section",
+    stateOfOrigin: "Oyo State",
+    guardianName: "Chief Oladipo Adeleke",
+    guardianPhone: "+234 802 333 4455",
+    guardianEmail: "parent.adeleke@gmail.com",
+    feeStatus: "paid",
+    feeBalance: 0,
+    termAverage: 88.4,
+    attendanceRate: 97,
+    status: "active",
+    avatarUrl: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=150&auto=format&fit=crop&q=80"
+  },
+  {
+    id: "std_02",
+    admissionNo: "EDU/PRI/2025/110",
+    firstName: "Ibrahim",
+    lastName: "Musa",
+    gender: "Male",
+    dob: "2015-09-08",
+    tier: "primary",
+    classOrDept: "Basic 5",
+    armOrStream: "Gold Arm",
+    stateOfOrigin: "Kaduna State",
+    guardianName: "Mal. Shehu Musa",
+    guardianPhone: "+234 803 777 2211",
+    guardianEmail: "shehu.musa@yahoo.com",
+    feeStatus: "partial",
+    feeBalance: 35000,
+    termAverage: 79.2,
+    attendanceRate: 92,
+    status: "active",
+    avatarUrl: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80"
+  },
+
+  // Junior Secondary
+  {
+    id: "std_03",
+    admissionNo: "JSS/26/102",
+    firstName: "Aisha",
+    lastName: "Danjuma",
+    gender: "Female",
+    dob: "2012-11-23",
+    tier: "junior_sec",
+    classOrDept: "JSS 3",
+    armOrStream: "Arm A (BECE Class)",
+    stateOfOrigin: "Niger State",
+    guardianName: "Hajiya Maryam Danjuma",
+    guardianPhone: "+234 805 444 8812",
+    guardianEmail: "maryam.danjuma@gmail.com",
+    feeStatus: "paid",
+    feeBalance: 0,
+    termAverage: 86.8,
+    attendanceRate: 98,
+    status: "active",
+    avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
+  },
+  {
+    id: "std_03b",
+    admissionNo: "JSS/25/067",
+    firstName: "Emmanuel",
+    lastName: "Okafor",
+    gender: "Male",
+    dob: "2013-05-18",
+    tier: "junior_sec",
+    classOrDept: "JSS 2",
+    armOrStream: "Arm B",
+    stateOfOrigin: "Anambra State",
+    guardianName: "Dr. Godwin Okafor",
+    guardianPhone: "+234 803 222 9901",
+    guardianEmail: "godwin.okafor@gmail.com",
+    feeStatus: "unpaid",
+    feeBalance: 120000,
+    termAverage: 74.0,
+    attendanceRate: 89,
+    status: "active",
+    avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80"
+  },
+
+  // Senior Secondary
+  {
+    id: "std_04",
+    admissionNo: "SSS/25/089",
+    firstName: "Tunde",
+    lastName: "Bakare",
+    gender: "Male",
+    dob: "2009-07-14",
+    tier: "senior_sec",
+    classOrDept: "SSS 3",
+    armOrStream: "Science Stream (WAEC)",
+    stateOfOrigin: "Ogun State",
+    guardianName: "Chief Oladipo Adeleke",
+    guardianPhone: "+234 802 333 4455",
+    guardianEmail: "parent.adeleke@gmail.com",
+    feeStatus: "paid",
+    feeBalance: 0,
+    termAverage: 84.5,
+    attendanceRate: 96,
+    status: "active",
+    avatarUrl: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80"
+  },
+  {
+    id: "std_05",
+    admissionNo: "SSS/24/115",
+    firstName: "Fatima",
+    lastName: "Aliyu",
+    gender: "Female",
+    dob: "2010-02-28",
+    tier: "senior_sec",
+    classOrDept: "SSS 2",
+    armOrStream: "Commercial Stream",
+    stateOfOrigin: "Kano State",
+    guardianName: "Alhaji Bello Aliyu",
+    guardianPhone: "+234 803 888 1199",
+    guardianEmail: "bello.aliyu@gmail.com",
+    feeStatus: "partial",
+    feeBalance: 45000,
+    termAverage: 81.3,
+    attendanceRate: 94,
+    status: "active",
+    avatarUrl: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80"
+  },
+
+  // Tertiary
+  {
+    id: "std_06",
+    admissionNo: "APX/2023/CSC/014",
+    firstName: "Oluwaseun",
+    lastName: "Adeyemi",
+    gender: "Male",
+    dob: "2004-03-10",
+    tier: "tertiary",
+    classOrDept: "Computer Science",
+    armOrStream: "300 Level (Faculty of Computing)",
+    stateOfOrigin: "Osun State",
+    guardianName: "Engr. Timothy Adeyemi",
+    guardianPhone: "+234 802 555 9922",
+    guardianEmail: "timothy.adeyemi@gmail.com",
+    feeStatus: "paid",
+    feeBalance: 0,
+    cgpa: 4.68,
+    attendanceRate: 95,
+    status: "active",
+    avatarUrl: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150&auto=format&fit=crop&q=80"
+  },
+  {
+    id: "std_07",
+    admissionNo: "APX/2022/ACC/058",
+    firstName: "Halima",
+    lastName: "Garba",
+    gender: "Female",
+    dob: "2003-10-15",
+    tier: "tertiary",
+    classOrDept: "Accounting & Finance",
+    armOrStream: "400 Level (Faculty of Management)",
+    stateOfOrigin: "Sokoto State",
+    guardianName: "Col. Usman Garba (Rtd)",
+    guardianPhone: "+234 803 111 6633",
+    guardianEmail: "usman.garba@gmail.com",
+    feeStatus: "paid",
+    feeBalance: 0,
+    cgpa: 4.45,
+    attendanceRate: 97,
+    status: "active",
+    avatarUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80"
+  },
+
+  // Sub-Programs
+  {
+    id: "std_08",
+    admissionNo: "SUB/IJMB/26/019",
+    firstName: "Kelechi",
+    lastName: "Nwosu",
+    gender: "Male",
+    dob: "2006-08-19",
+    tier: "sub_program",
+    classOrDept: "IJMB Remedial Program",
+    armOrStream: "Science Batch (Physics/Chem/Bio)",
+    stateOfOrigin: "Imo State",
+    guardianName: "Sir Jude Nwosu",
+    guardianPhone: "+234 806 777 4411",
+    guardianEmail: "jude.nwosu@gmail.com",
+    feeStatus: "partial",
+    feeBalance: 50000,
+    termAverage: 82.0,
+    attendanceRate: 91,
+    status: "active",
+    avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80"
+  },
+  {
+    id: "std_09",
+    admissionNo: "SUB/DIP/26/104",
+    firstName: "Blessing",
+    lastName: "Johnson",
+    gender: "Female",
+    dob: "2002-12-05",
+    tier: "sub_program",
+    classOrDept: "Executive Diploma in Cybersecurity",
+    armOrStream: "Weekend Cohort 2026",
+    stateOfOrigin: "Edo State",
+    guardianName: "Self-Sponsored",
+    guardianPhone: "+234 818 999 0011",
+    guardianEmail: "blessing.j@gmail.com",
+    feeStatus: "paid",
+    feeBalance: 0,
+    termAverage: 90.5,
+    attendanceRate: 96,
+    status: "active",
+    avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
+  }
+];
+
+export const mockSubjects: SubjectOrCourse[] = [
+  // Primary Subjects
+  { 
+    id: "sub_p1", 
+    code: "ENG-PRI", 
+    name: "English Studies & Phonics", 
+    tier: "primary", 
+    level: "Primary 1 - 6", 
+    category: "Core", 
+    periodsPerWeek: 5,
+    assignedTeacherId: "stf_01",
+    teacherName: "Mrs. Folashade Adeleke",
+    syllabusOutline: "NERDC Primary English: Jolly Phonics, reading comprehension, vocabulary expansion, and composition.",
+    approvedByOffice: "Office of the Vice Principal (Academics)",
+    status: "active"
+  },
+  { 
+    id: "sub_p2", 
+    code: "MTH-PRI", 
+    name: "Mathematics & Quantitative", 
+    tier: "primary", 
+    level: "Primary 1 - 6", 
+    category: "Core", 
+    periodsPerWeek: 5,
+    assignedTeacherId: "stf_06",
+    teacherName: "Mr. Chinedu Eze",
+    syllabusOutline: "Numeracy, mental arithmetic, geometry, word problems, and quantitative aptitude test drills.",
+    approvedByOffice: "Office of the Vice Principal (Academics)",
+    status: "active"
+  },
+  { 
+    id: "sub_p3", 
+    code: "BST-PRI", 
+    name: "Basic Science & Technology", 
+    tier: "primary", 
+    level: "Primary 1 - 6", 
+    category: "Science", 
+    periodsPerWeek: 4,
+    assignedTeacherId: "stf_10",
+    teacherName: "Miss Fatima Danladi",
+    syllabusOutline: "Living and non-living things, weather observation, energy forms, basic ICT and computer appreciation.",
+    approvedByOffice: "Office of the Vice Principal (Academics)",
+    status: "active"
+  },
+  { 
+    id: "sub_p4", 
+    code: "NVE-PRI", 
+    name: "National Values & Civic Education", 
+    tier: "primary", 
+    level: "Primary 1 - 6", 
+    category: "General", 
+    periodsPerWeek: 3,
+    assignedTeacherId: "stf_08",
+    teacherName: "Mr. Babatunde Balogun",
+    syllabusOutline: "Civic rights, Nigerian cultural heritage, peace education, social habits, and moral instructions.",
+    approvedByOffice: "Office of the Vice Principal (Academics)",
+    status: "active"
+  },
+  
+  // Junior Secondary Subjects
+  { 
+    id: "sub_j1", 
+    code: "ENG-JSS", 
+    name: "English Language & Literature", 
+    tier: "junior_sec", 
+    level: "JSS 1 - 3", 
+    category: "Core", 
+    periodsPerWeek: 5,
+    assignedTeacherId: "stf_02",
+    teacherName: "Mr. Obinna Nnamdi",
+    syllabusOutline: "BECE curriculum: Grammatical structures, essay writing, comprehension, drama and prose set-books.",
+    approvedByOffice: "Office of the Vice Principal (Academics)",
+    status: "active"
+  },
+  { 
+    id: "sub_j2", 
+    code: "MTH-JSS", 
+    name: "General Mathematics", 
+    tier: "junior_sec", 
+    level: "JSS 1 - 3", 
+    category: "Core", 
+    periodsPerWeek: 5,
+    assignedTeacherId: "stf_09",
+    teacherName: "Engr. Sunday Alao",
+    syllabusOutline: "Number bases, algebraic processes, mensuration, simple linear equations, and plane geometry.",
+    approvedByOffice: "Office of the Vice Principal (Academics)",
+    status: "active"
+  },
+  { 
+    id: "sub_j3", 
+    code: "BST-JSS", 
+    name: "Basic Science & Technology (BST)", 
+    tier: "junior_sec", 
+    level: "JSS 1 - 3", 
+    category: "Science", 
+    periodsPerWeek: 4,
+    assignedTeacherId: "stf_10",
+    teacherName: "Miss Fatima Danladi",
+    syllabusOutline: "Basic science, basic technology, physical health education, and information technology integration.",
+    approvedByOffice: "Office of the Vice Principal (Academics)",
+    status: "active"
+  },
+  { 
+    id: "sub_j4", 
+    code: "BUS-JSS", 
+    name: "Business Studies & Bookkeeping", 
+    tier: "junior_sec", 
+    level: "JSS 1 - 3", 
+    category: "Commercial", 
+    periodsPerWeek: 3,
+    assignedTeacherId: "stf_05",
+    teacherName: "Alhaji Rasheed Salami (FCA)",
+    syllabusOutline: "Office practice, commercial transactions, double-entry bookkeeping, and keyboarding skills.",
+    approvedByOffice: "Office of the Vice Principal (Academics)",
+    status: "active"
+  },
+
+  // Senior Secondary Subjects
+  { 
+    id: "sub_s1", 
+    code: "ENG-SSS", 
+    name: "English Language (WAEC/NECO)", 
+    tier: "senior_sec", 
+    level: "SSS 1 - 3", 
+    category: "Core", 
+    periodsPerWeek: 5,
+    assignedTeacherId: "stf_02",
+    teacherName: "Mr. Obinna Nnamdi",
+    syllabusOutline: "WASSCE/SSCE: Continuous writing, summary techniques, lexis and structure, and oral test.",
+    approvedByOffice: "Office of the Vice Principal (Academics)",
+    status: "active"
+  },
+  { 
+    id: "sub_s2", 
+    code: "MTH-SSS", 
+    name: "General Mathematics", 
+    tier: "senior_sec", 
+    level: "SSS 1 - 3", 
+    category: "Core", 
+    periodsPerWeek: 5,
+    assignedTeacherId: "stf_09",
+    teacherName: "Engr. Sunday Alao",
+    syllabusOutline: "Logarithms, matrices, quadratic equations, circle theorems, trigonometry, and statistics.",
+    approvedByOffice: "Office of the Vice Principal (Academics)",
+    status: "active"
+  },
+  { 
+    id: "sub_s3", 
+    code: "PHY-SSS", 
+    name: "Physics & Practicals", 
+    tier: "senior_sec", 
+    level: "SSS 1 - 3", 
+    category: "Science", 
+    periodsPerWeek: 4,
+    assignedTeacherId: "stf_03",
+    teacherName: "Dr. Abdullahi Umar",
+    syllabusOutline: "Mechanics, thermal physics, optics, electromagnetism, and atomic physics with weekly lab sessions.",
+    approvedByOffice: "Office of the Vice Principal (Academics)",
+    status: "active"
+  },
+  { 
+    id: "sub_s4", 
+    code: "CHM-SSS", 
+    name: "Chemistry & Lab Experiments", 
+    tier: "senior_sec", 
+    level: "SSS 1 - 3", 
+    category: "Science", 
+    periodsPerWeek: 4,
+    assignedTeacherId: "stf_07",
+    teacherName: "Mrs. Amina Oladipo",
+    syllabusOutline: "Periodic table, stoichiometry, electrolysis, organic chemistry, volumetric and qualitative analysis.",
+    approvedByOffice: "Office of the Vice Principal (Academics)",
+    status: "active"
+  },
+  { 
+    id: "sub_s5", 
+    code: "ACC-SSS", 
+    name: "Financial Accounting", 
+    tier: "senior_sec", 
+    level: "SSS 1 - 3", 
+    category: "Commercial", 
+    periodsPerWeek: 4,
+    assignedTeacherId: "stf_05",
+    teacherName: "Alhaji Rasheed Salami (FCA)",
+    syllabusOutline: "Ledgers, trial balance, final accounts, bank reconciliation, and partnership accounting.",
+    approvedByOffice: "Office of the Vice Principal (Academics)",
+    status: "active"
+  },
+  { 
+    id: "sub_s6", 
+    code: "LIT-SSS", 
+    name: "Literature in English", 
+    tier: "senior_sec", 
+    level: "SSS 1 - 3", 
+    category: "Arts", 
+    periodsPerWeek: 4,
+    assignedTeacherId: "stf_08",
+    teacherName: "Barr. Mrs. Grace Okon",
+    syllabusOutline: "WAEC African & Non-African poetry, drama texts (Shakespeare, Soyinka), and literary devices.",
+    approvedByOffice: "Office of the Vice Principal (Academics)",
+    status: "active"
+  },
+
+  // Tertiary Courses
+  { 
+    id: "sub_t1", 
+    code: "CSC 301", 
+    name: "Data Structures & Algorithms", 
+    tier: "tertiary", 
+    level: "300 Level", 
+    creditUnits: 3, 
+    periodsPerWeek: 3,
+    category: "Core", 
+    assignedTeacherId: "stf_04",
+    teacherName: "Prof. Kingsley Ogbonna",
+    syllabusOutline: "NUC BMAS: Asymptotic complexity, balanced search trees, graph algorithms, hash maps, dynamic programming.",
+    approvedByOffice: "Office of the Dean of Computing",
+    status: "active"
+  },
+  { 
+    id: "sub_t2", 
+    code: "CSC 305", 
+    name: "Database Design & Management", 
+    tier: "tertiary", 
+    level: "300 Level", 
+    creditUnits: 3, 
+    periodsPerWeek: 3,
+    category: "Core", 
+    assignedTeacherId: "stf_04",
+    teacherName: "Prof. Kingsley Ogbonna",
+    syllabusOutline: "Relational algebra, normal forms (1NF-BCNF), SQL transaction processing, ACID properties, and indexing.",
+    approvedByOffice: "Office of the Dean of Computing",
+    status: "active"
+  },
+
+  // Sub-Program Courses
+  { 
+    id: "sub_sp1", 
+    code: "IJMB-MTH", 
+    name: "Advanced Level Pure Mathematics", 
+    tier: "sub_program", 
+    level: "IJMB Stream", 
+    periodsPerWeek: 4,
+    category: "Science", 
+    assignedTeacherId: "stf_09",
+    teacherName: "Engr. Sunday Alao",
+    syllabusOutline: "ABU IJMB Syllabus: Differential calculus, vectors, complex numbers, series and differential equations.",
+    approvedByOffice: "Directorate of Remedial Studies",
+    status: "active"
+  }
+];
+
+export const mockGrades: GradeRecord[] = [
+  // Primary Report Card for Chidinma Adeleke (std_01)
+  {
+    id: "grd_01",
+    studentId: "std_01",
+    studentName: "Chidinma Adeleke",
+    admissionNo: "EDU/PRI/2024/042",
+    tier: "primary",
+    classOrDept: "Primary 4",
+    subjectCode: "ENG-PRI",
+    subjectName: "English Studies & Phonics",
+    ca1Score: 18,
+    ca2Score: 19,
+    examScore: 54,
+    totalScore: 91,
+    grade: "A+",
+    remarks: "Outstanding language fluency and reading comprehension.",
+    psychomotor: { punctuality: 5, neatness: 5, politeness: 5, attentiveness: 4, sportsAndGym: 4 }
+  },
+  {
+    id: "grd_02",
+    studentId: "std_01",
+    studentName: "Chidinma Adeleke",
+    admissionNo: "EDU/PRI/2024/042",
+    tier: "primary",
+    classOrDept: "Primary 4",
+    subjectCode: "MTH-PRI",
+    subjectName: "Mathematics & Quantitative",
+    ca1Score: 17,
+    ca2Score: 18,
+    examScore: 51,
+    totalScore: 86,
+    grade: "A",
+    remarks: "Excellent grasp of quantitative reasoning and multiplication.",
+    psychomotor: { punctuality: 5, neatness: 5, politeness: 5, attentiveness: 4, sportsAndGym: 4 }
+  },
+
+  // Senior Secondary: Tunde Bakare (SSS 3 - WAEC Standard A1-F9)
+  {
+    id: "grd_03",
+    studentId: "std_04",
+    studentName: "Tunde Bakare",
+    admissionNo: "SSS/25/089",
+    tier: "senior_sec",
+    classOrDept: "SSS 3 (Science)",
+    subjectCode: "PHY-SSS",
+    subjectName: "Physics & Practicals",
+    ca1Score: 18,
+    ca2Score: 18,
+    examScore: 52,
+    totalScore: 88,
+    grade: "A1",
+    remarks: "Distinction. Superb analytical problem solving in optics & mechanics."
+  },
+  {
+    id: "grd_04",
+    studentId: "std_04",
+    studentName: "Tunde Bakare",
+    admissionNo: "SSS/25/089",
+    tier: "senior_sec",
+    classOrDept: "SSS 3 (Science)",
+    subjectCode: "CHM-SSS",
+    subjectName: "Chemistry & Lab Experiments",
+    ca1Score: 17,
+    ca2Score: 16,
+    examScore: 49,
+    totalScore: 82,
+    grade: "A1",
+    remarks: "Excellent laboratory titration and qualitative analysis."
+  },
+  {
+    id: "grd_05",
+    studentId: "std_04",
+    studentName: "Tunde Bakare",
+    admissionNo: "SSS/25/089",
+    tier: "senior_sec",
+    classOrDept: "SSS 3 (Science)",
+    subjectCode: "MTH-SSS",
+    subjectName: "General Mathematics",
+    ca1Score: 16,
+    ca2Score: 17,
+    examScore: 50,
+    totalScore: 83,
+    grade: "A1",
+    remarks: "Distinction in trigonometry and algebra."
+  },
+
+  // Tertiary: Oluwaseun Adeyemi (B.Sc Computer Science 300L - 5.0 CGPA Scale)
+  {
+    id: "grd_06",
+    studentId: "std_06",
+    studentName: "Oluwaseun Adeyemi",
+    admissionNo: "APX/2023/CSC/014",
+    tier: "tertiary",
+    classOrDept: "Computer Science (300L)",
+    subjectCode: "CSC 301",
+    subjectName: "Data Structures & Algorithms",
+    ca1Score: 19,
+    ca2Score: 19,
+    examScore: 52,
+    totalScore: 90,
+    grade: "A",
+    gradePoint: 5.0,
+    creditUnits: 3,
+    remarks: "First Class Performance. Clean algorithmic complexity analysis."
+  },
+  {
+    id: "grd_07",
+    studentId: "std_06",
+    studentName: "Oluwaseun Adeyemi",
+    admissionNo: "APX/2023/CSC/014",
+    tier: "tertiary",
+    classOrDept: "Computer Science (300L)",
+    subjectCode: "CSC 305",
+    subjectName: "Database Design & Management",
+    ca1Score: 18,
+    ca2Score: 17,
+    examScore: 50,
+    totalScore: 85,
+    grade: "A",
+    gradePoint: 5.0,
+    creditUnits: 3,
+    remarks: "Flawless relational schema design and indexing mastery."
+  }
+];
+
+export const mockInvoices: InvoiceRecord[] = [
+  {
+    id: "inv_01",
+    invoiceNo: "INV-NG-2026-0041",
+    studentId: "std_01",
+    studentName: "Chidinma Adeleke",
+    admissionNo: "EDU/PRI/2024/042",
+    tier: "primary",
+    feeType: "Primary School Tuition & Academic Materials",
+    amount: 85000,
+    amountPaid: 85000,
+    balance: 0,
+    status: "paid",
+    session: "2026/2027",
+    termOrSemester: "First Term",
+    dueDate: "2026-09-30",
+    transactionRef: "GTB/TRF/9982140",
+    paymentMethod: "Bank Transfer (GTBank)",
+    receiptDate: "2026-09-04"
+  },
+  {
+    id: "inv_02",
+    invoiceNo: "INV-NG-2026-0082",
+    studentId: "std_03b",
+    studentName: "Emmanuel Okafor",
+    admissionNo: "JSS/25/067",
+    tier: "junior_sec",
+    feeType: "JSS Tuition & Basic Science Practical Levies",
+    amount: 120000,
+    amountPaid: 0,
+    balance: 120000,
+    status: "unpaid",
+    session: "2026/2027",
+    termOrSemester: "First Term",
+    dueDate: "2026-10-15"
+  },
+  {
+    id: "inv_03",
+    invoiceNo: "INV-NG-2026-0115",
+    studentId: "std_04",
+    studentName: "Tunde Bakare",
+    admissionNo: "SSS/25/089",
+    tier: "senior_sec",
+    feeType: "SSS 3 Tuition + WAEC & NECO Joint Exam Registration",
+    amount: 175000,
+    amountPaid: 175000,
+    balance: 0,
+    status: "paid",
+    session: "2026/2027",
+    termOrSemester: "First Term",
+    dueDate: "2026-09-20",
+    transactionRef: "ZENITH/E-PAY/3391002",
+    paymentMethod: "Card Online (Zenith Bank)",
+    receiptDate: "2026-09-02"
+  },
+  {
+    id: "inv_04",
+    invoiceNo: "INV-NG-2026-0209",
+    studentId: "std_06",
+    studentName: "Oluwaseun Adeyemi",
+    admissionNo: "APX/2023/CSC/014",
+    tier: "tertiary",
+    feeType: "Undergraduate Semester Tuition & Faculty Tech Dues",
+    amount: 220000,
+    amountPaid: 220000,
+    balance: 0,
+    status: "paid",
+    session: "2026/2027",
+    termOrSemester: "Harmattan Semester",
+    dueDate: "2026-10-01",
+    transactionRef: "ACCESS/NIP/88716321",
+    paymentMethod: "NIBSS Instant Transfer",
+    receiptDate: "2026-08-28"
+  },
+  {
+    id: "inv_05",
+    invoiceNo: "INV-NG-2026-0301",
+    studentId: "std_08",
+    studentName: "Kelechi Nwosu",
+    admissionNo: "SUB/IJMB/26/019",
+    tier: "sub_program",
+    feeType: "IJMB A-Level Tuition & Laboratory Consumables",
+    amount: 150000,
+    amountPaid: 100000,
+    balance: 50000,
+    status: "partial",
+    session: "2026/2027",
+    termOrSemester: "Batch 1",
+    dueDate: "2026-10-10",
+    transactionRef: "UBA/POS/441920",
+    paymentMethod: "School Bursary POS",
+    receiptDate: "2026-09-01"
+  }
+];
+
+export const mockCBTExams: CBTExam[] = [
+  {
+    id: "cbt_01",
+    title: "BECE Mock Preparation: Basic Science & Tech",
+    subject: "Basic Science & Technology",
+    tier: "junior_sec",
+    classLevel: "JSS 3",
+    durationMinutes: 10,
+    totalMarks: 20,
+    questionsCount: 4,
+    status: "active",
+    passPercentage: 50,
+    instructions: "Answer all questions. Each correct answer carries 5 marks. The timer starts automatically once you click 'Begin CBT Exam'.",
+    questions: [
+      {
+        id: "q_jss1",
+        questionText: "Which of the following components of the human blood is responsible for clotting during an injury?",
+        options: ["Red Blood Cells (Erythrocytes)", "Platelets (Thrombocytes)", "White Blood Cells (Leukocytes)", "Blood Plasma"],
+        correctOptionIndex: 1,
+        explanation: "Platelets (thrombocytes) adhere to damaged blood vessel walls and initiate clotting.",
+        marks: 5
+      },
+      {
+        id: "q_jss2",
+        questionText: "In simple machines, what is the mechanical advantage (M.A) if an effort of 20N is used to lift a load of 100N?",
+        options: ["0.2", "2.0", "5.0", "2000"],
+        correctOptionIndex: 2,
+        explanation: "Mechanical Advantage = Load / Effort = 100N / 20N = 5.0",
+        marks: 5
+      },
+      {
+        id: "q_jss3",
+        questionText: "What is the primary function of the ALU (Arithmetic Logic Unit) in a computer's Central Processing Unit?",
+        options: ["To store long-term data files", "To perform mathematical calculations and logical comparisons", "To regulate power supply to the motherboard", "To connect to the internet"],
+        correctOptionIndex: 1,
+        explanation: "The ALU executes arithmetic (addition, subtraction) and logical decisions (AND, OR, comparisons).",
+        marks: 5
+      },
+      {
+        id: "q_jss4",
+        questionText: "Which non-renewable energy source is the predominant driver of Nigeria's export revenue?",
+        options: ["Solar Radiation", "Crude Oil and Petroleum", "Hydroelectric Turbines", "Wind Energy"],
+        correctOptionIndex: 1,
+        explanation: "Petroleum and natural gas constitute over 85% of Nigeria's foreign exchange earnings.",
+        marks: 5
+      }
+    ]
+  },
+  {
+    id: "cbt_02",
+    title: "WAEC Standard: Senior Physics Continuous Assessment",
+    subject: "Physics & Practicals",
+    tier: "senior_sec",
+    classLevel: "SSS 3 Science",
+    durationMinutes: 15,
+    totalMarks: 20,
+    questionsCount: 4,
+    status: "active",
+    passPercentage: 50,
+    instructions: "Senior Secondary CBT Assessment. Ensure you have your rough sheet. Select the best option from A to D.",
+    questions: [
+      {
+        id: "q_sss1",
+        questionText: "A car accelerates uniformly from rest at 4 m/s² for 6 seconds. What total distance does it cover during this period?",
+        options: ["24 meters", "48 meters", "72 meters", "144 meters"],
+        correctOptionIndex: 2,
+        explanation: "Using s = ut + 0.5at²: since u=0, s = 0.5 * 4 * (6²) = 2 * 36 = 72m.",
+        marks: 5
+      },
+      {
+        id: "q_sss2",
+        questionText: "Which phenomenon conclusively demonstrates the wave nature of light rather than particle nature?",
+        options: ["Photoelectric effect", "Interference and Diffraction", "Rectilinear propagation", "Compton scattering"],
+        correctOptionIndex: 1,
+        explanation: "Interference (Young's double slit) and diffraction patterns prove wave behavior.",
+        marks: 5
+      },
+      {
+        id: "q_sss3",
+        questionText: "Calculate the electrical energy consumed in 2 hours by an electric pressing iron rated 1200W.",
+        options: ["0.6 kWh", "1.2 kWh", "2.4 kWh", "2400 kWh"],
+        correctOptionIndex: 2,
+        explanation: "Energy = Power (kW) * Time (hours) = 1.2 kW * 2 h = 2.4 kWh.",
+        marks: 5
+      },
+      {
+        id: "q_sss4",
+        questionText: "What is the escape velocity from the Earth's surface approximately equal to?",
+        options: ["9.8 km/s", "11.2 km/s", "3.0 x 10^8 m/s", "42 km/s"],
+        correctOptionIndex: 1,
+        explanation: "The escape velocity from Earth is sqrt(2gR) ≈ 11.2 km/s.",
+        marks: 5
+      }
+    ]
+  },
+  {
+    id: "cbt_03",
+    title: "CSC 301 Mid-Semester CBT: Algorithms & Data Structures",
+    subject: "Computer Science",
+    tier: "tertiary",
+    classLevel: "300 Level",
+    durationMinutes: 15,
+    totalMarks: 20,
+    questionsCount: 4,
+    status: "active",
+    passPercentage: 60,
+    instructions: "Faculty of Computing & Applied Sciences Examination. Timed university CBT session.",
+    questions: [
+      {
+        id: "q_uni1",
+        questionText: "What is the worst-case time complexity of QuickSort when the pivot selection is consistently the smallest or largest element?",
+        options: ["O(N log N)", "O(N)", "O(N²)", "O(log N)"],
+        correctOptionIndex: 2,
+        explanation: "Without randomization, picking an extreme element leads to unbalanced partitions yielding O(N²).",
+        marks: 5
+      },
+      {
+        id: "q_uni2",
+        questionText: "In a balanced AVL tree, what is the maximum permissible difference between heights of left and right subtrees for any node?",
+        options: ["0", "1", "2", "Unlimited"],
+        correctOptionIndex: 1,
+        explanation: "The balance factor of an AVL tree node must always be -1, 0, or +1.",
+        marks: 5
+      },
+      {
+        id: "q_uni3",
+        questionText: "Which data structure follows the LIFO (Last-In First-Out) principle and is used for function call stacks?",
+        options: ["Queue", "Stack", "Binary Heap", "Circular Linked List"],
+        correctOptionIndex: 1,
+        explanation: "Stacks implement LIFO where the most recently pushed item is the first popped.",
+        marks: 5
+      },
+      {
+        id: "q_uni4",
+        questionText: "What traversal method of a Binary Search Tree (BST) visits nodes in non-decreasing sorted order?",
+        options: ["Pre-order traversal", "Post-order traversal", "In-order traversal", "Breadth-first search"],
+        correctOptionIndex: 2,
+        explanation: "In-order traversal (Left, Root, Right) produces sorted ascending sequence in a BST.",
+        marks: 5
+      }
+    ]
+  },
+  {
+    id: "cbt_04",
+    title: "Primary 4 General Knowledge & Mental Maths",
+    subject: "Mathematics & Reasoning",
+    tier: "primary",
+    classLevel: "Primary 4",
+    durationMinutes: 8,
+    totalMarks: 15,
+    questionsCount: 3,
+    status: "active",
+    passPercentage: 50,
+    instructions: "Read carefully and choose the correct answer.",
+    questions: [
+      {
+        id: "q_p1",
+        questionText: "If there are 24 pupils in Primary 4 Gold and each pupil has 5 textbooks, how many textbooks are there in total?",
+        options: ["100", "120", "124", "140"],
+        correctOptionIndex: 1,
+        explanation: "24 x 5 = 120 textbooks.",
+        marks: 5
+      },
+      {
+        id: "q_p2",
+        questionText: "What is the capital city of Nigeria?",
+        options: ["Lagos", "Kano", "Abuja", "Port Harcourt"],
+        correctOptionIndex: 2,
+        explanation: "Abuja is the Federal Capital Territory (FCT) of Nigeria.",
+        marks: 5
+      },
+      {
+        id: "q_p3",
+        questionText: "How many sides does a regular hexagon have?",
+        options: ["5 sides", "6 sides", "8 sides", "10 sides"],
+        correctOptionIndex: 1,
+        explanation: "A hexagon has 6 straight sides.",
+        marks: 5
+      }
+    ]
+  }
+];
+
+export const mockAnnouncements: Announcement[] = [
+  {
+    id: "ann_01",
+    title: "Resumption for 2026/2027 Academic Session & School Fee Clearance",
+    content: "All parents and students across Primary, Junior Secondary, and Senior Secondary schools are reminded that physical resumption commenced on Monday. Proof of fee payment or official bursary clearance clearance cards will be required for entry into lecture halls.",
+    targetTier: "all",
+    priority: "important",
+    author: "Office of the Registrar",
+    date: "2026-09-08"
+  },
+  {
+    id: "ann_02",
+    title: "Parent-Teacher Association (PTA) General Meeting Notice",
+    content: "Dear Parents and Guardians of Primary and Junior Secondary scholars, the First Term PTA Congress is scheduled for Saturday, 26th September at 10:00 AM at the College Auditorium. Agenda includes academic tracking portal launch and school bus logistics.",
+    targetTier: "parents",
+    priority: "urgent",
+    author: "Mrs. F. Adeleke (Primary Head)",
+    date: "2026-09-10"
+  },
+  {
+    id: "ann_03",
+    title: "WAEC & NECO Joint Registration Closing Date",
+    content: "All SSS 3 students must finalize their bio-data capture and subject combination verification at the Examination Secretariat before October 15th.",
+    targetTier: "senior_sec",
+    priority: "urgent",
+    author: "Dr. Abdullahi Umar (SSS Principal)",
+    date: "2026-09-09"
+  },
+  {
+    id: "ann_04",
+    title: "Harmattan Semester Course Registration Deadline for Undergraduates",
+    content: "Undergraduate students in 100L through 500L must conclude online course registration and submit signed course forms to their Departmental Academic Advisers.",
+    targetTier: "tertiary",
+    priority: "important",
+    author: "Dean, Faculty of Computing",
+    date: "2026-09-05"
+  }
+];
+
+export const mockStaff: StaffMember[] = [
+  {
+    id: "stf_01",
+    staffId: "STF/PR/001",
+    name: "Mrs. Folashade Adeleke",
+    role: "Headmistress & Language Specialist",
+    tier: "primary",
+    qualification: "M.Ed Childhood Education (Univ. of Ibadan), B.Ed (Hons)",
+    departmentOrClass: "Primary Administration",
+    assignedSubjects: ["English Studies & Phonics"],
+    assignedClassArm: "Basic 4 Gold",
+    trcnNumber: "TRCN/LA/2018/00912",
+    trcnStatus: "certified",
+    employmentDate: "2018-09-01",
+    salaryGrade: "GL 15",
+    periodsPerWeek: 12,
+    officeJurisdiction: "Office of the Primary Headmistress",
+    email: "primary.head@apexroyal.edu.ng",
+    phone: "+234 803 111 2233",
+    status: "active"
+  },
+  {
+    id: "stf_02",
+    staffId: "STF/JS/014",
+    name: "Mr. Obinna Nnamdi",
+    role: "Junior Secondary Principal & Literature Master",
+    tier: "junior_sec",
+    qualification: "B.A. (Ed) English & Literature (UNN)",
+    departmentOrClass: "Junior Secondary School",
+    assignedSubjects: ["English Language & Literature"],
+    assignedClassArm: "JSS 2 Arm A",
+    trcnNumber: "TRCN/EN/2019/04321",
+    trcnStatus: "certified",
+    employmentDate: "2019-01-15",
+    salaryGrade: "GL 14",
+    periodsPerWeek: 15,
+    officeJurisdiction: "Office of the Junior Secondary Principal",
+    email: "jss.principal@apexroyal.edu.ng",
+    phone: "+234 805 222 3344",
+    status: "active"
+  },
+  {
+    id: "stf_03",
+    staffId: "STF/SS/008",
+    name: "Dr. Abdullahi Umar",
+    role: "Senior Secondary Principal & Physics Lead",
+    tier: "senior_sec",
+    qualification: "Ph.D Nuclear Physics (ABU Zaria), PGDE",
+    departmentOrClass: "Senior Science Department",
+    assignedSubjects: ["Physics & Practicals"],
+    assignedClassArm: "SSS 3 Science A",
+    trcnNumber: "TRCN/KD/2016/01145",
+    trcnStatus: "certified",
+    employmentDate: "2016-08-20",
+    salaryGrade: "GL 16",
+    periodsPerWeek: 12,
+    officeJurisdiction: "Office of the Senior Secondary Principal",
+    email: "sss.principal@apexroyal.edu.ng",
+    phone: "+234 802 333 4455",
+    status: "active"
+  },
+  {
+    id: "stf_04",
+    staffId: "STF/UNI/022",
+    name: "Prof. Kingsley Ogbonna",
+    role: "Dean of Computing & Professor of Algorithms",
+    tier: "tertiary",
+    qualification: "Ph.D Computer Science (FUTO), FBCS",
+    departmentOrClass: "Department of Computer Science",
+    assignedSubjects: ["CSC 301 Data Structures", "CSC 411 Artificial Intelligence"],
+    assignedClassArm: "CSC 300 Level",
+    trcnStatus: "exempt",
+    employmentDate: "2015-03-01",
+    salaryGrade: "CONUASS 07",
+    periodsPerWeek: 8,
+    officeJurisdiction: "Office of the Dean of Computing",
+    email: "dean.computing@apexroyal.edu.ng",
+    phone: "+234 813 444 5566",
+    status: "active"
+  },
+  {
+    id: "stf_05",
+    staffId: "STF/BUR/002",
+    name: "Alhaji Rasheed Salami (FCA)",
+    role: "Chief Bursar & Financial Controller",
+    tier: "all",
+    qualification: "Fellow of ICAN, B.Sc Accounting (Unilag)",
+    departmentOrClass: "Bursary & Financial Operations",
+    assignedSubjects: ["Financial Accounting", "Business Studies & Bookkeeping"],
+    assignedClassArm: "SSS 3 Commercial",
+    trcnStatus: "exempt",
+    employmentDate: "2017-06-10",
+    salaryGrade: "GL 16",
+    periodsPerWeek: 8,
+    officeJurisdiction: "Office of the Chief Bursar",
+    email: "bursar@apexroyal.edu.ng",
+    phone: "+234 809 555 6677",
+    status: "active"
+  },
+  {
+    id: "stf_06",
+    staffId: "STF/PR/009",
+    name: "Mr. Chinedu Eze",
+    role: "Senior Primary Teacher & Form Master",
+    tier: "primary",
+    qualification: "B.Ed Mathematics (UNN), NCE",
+    departmentOrClass: "Primary Department",
+    assignedSubjects: ["Mathematics & Quantitative"],
+    assignedClassArm: "Basic 5 Gold",
+    trcnNumber: "TRCN/IM/2021/08819",
+    trcnStatus: "certified",
+    employmentDate: "2021-09-01",
+    salaryGrade: "GL 10",
+    periodsPerWeek: 18,
+    officeJurisdiction: "Academic Registry",
+    email: "c.eze.teacher@apexroyal.edu.ng",
+    phone: "+234 803 777 8899",
+    status: "active"
+  },
+  {
+    id: "stf_07",
+    staffId: "STF/SS/019",
+    name: "Mrs. Amina Oladipo",
+    role: "Chemistry Master & Lab Coordinator",
+    tier: "senior_sec",
+    qualification: "B.Sc (Ed) Chemistry (OAU Ife)",
+    departmentOrClass: "Senior Science Department",
+    assignedSubjects: ["Chemistry & Lab Experiments"],
+    assignedClassArm: "SSS 2 Science",
+    trcnNumber: "TRCN/OY/2020/05541",
+    trcnStatus: "certified",
+    employmentDate: "2020-02-14",
+    salaryGrade: "GL 12",
+    periodsPerWeek: 16,
+    officeJurisdiction: "Office of the Vice Principal (Academics)",
+    email: "a.oladipo@apexroyal.edu.ng",
+    phone: "+234 802 444 5511",
+    status: "active"
+  },
+  {
+    id: "stf_08",
+    staffId: "STF/SS/025",
+    name: "Barr. Mrs. Grace Okon",
+    role: "Literature & Arts Stream Form Mistress",
+    tier: "senior_sec",
+    qualification: "LL.B (BL), PGDE English Literature (UniCal)",
+    departmentOrClass: "Senior Arts Department",
+    assignedSubjects: ["Literature in English", "National Values & Civic Education"],
+    assignedClassArm: "SSS 3 Arts",
+    trcnNumber: "TRCN/CR/2017/02234",
+    trcnStatus: "certified",
+    employmentDate: "2019-10-01",
+    salaryGrade: "GL 13",
+    periodsPerWeek: 14,
+    officeJurisdiction: "Office of the Vice Principal (Academics)",
+    email: "grace.okon@apexroyal.edu.ng",
+    phone: "+234 808 333 9922",
+    status: "active"
+  },
+  {
+    id: "stf_09",
+    staffId: "STF/JS/022",
+    name: "Engr. Sunday Alao",
+    role: "Mathematics Lead & ICT Coordinator",
+    tier: "junior_sec",
+    qualification: "B.Eng Mechanical Engineering, PGDE (Unilorin)",
+    departmentOrClass: "Junior Mathematics & Computing",
+    assignedSubjects: ["General Mathematics", "Advanced Level Pure Mathematics"],
+    assignedClassArm: "JSS 1 Arm A",
+    trcnNumber: "TRCN/KW/2021/06612",
+    trcnStatus: "certified",
+    employmentDate: "2021-01-10",
+    salaryGrade: "GL 11",
+    periodsPerWeek: 18,
+    officeJurisdiction: "Office of the Vice Principal (Academics)",
+    email: "s.alao@apexroyal.edu.ng",
+    phone: "+234 814 555 1100",
+    status: "active"
+  },
+  {
+    id: "stf_10",
+    staffId: "STF/PR/015",
+    name: "Miss Fatima Danladi",
+    role: "Early Childhood Specialist & BST Mistress",
+    tier: "primary",
+    qualification: "NCE Primary Education (FCE Kano), B.Sc Ed",
+    departmentOrClass: "Primary Science & Early Years",
+    assignedSubjects: ["Basic Science & Technology"],
+    assignedClassArm: "Nursery 2 Diamond",
+    trcnNumber: "TRCN/KN/2023/10214",
+    trcnStatus: "certified",
+    employmentDate: "2023-08-15",
+    salaryGrade: "GL 08",
+    periodsPerWeek: 20,
+    officeJurisdiction: "Primary Academic Office",
+    email: "fatima.danladi@apexroyal.edu.ng",
+    phone: "+234 816 777 2244",
+    status: "active"
+  }
+];
+
+export const mockAlumniProfiles: AlumniProfile[] = [
+  {
+    id: "alm_01",
+    name: "Engr. Femi Adeleke",
+    admissionNo: "SSS/20/012",
+    graduatingYear: "Class of 2020",
+    tier: "senior_sec",
+    qualificationOrClass: "Senior Secondary (Science Set)",
+    currentRole: "Lead Cloud Infrastructure Engineer at Paystack",
+    location: "Lagos / Remote",
+    avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+    linkedInOrEmail: "femi.adeleke@alumni.apexroyal.edu.ng",
+    mentorshipAvailable: true
+  },
+  {
+    id: "alm_02",
+    name: "Dr. Amina Bello",
+    admissionNo: "APX/2019/CSC/004",
+    graduatingYear: "Class of 2023",
+    tier: "tertiary",
+    qualificationOrClass: "B.Sc Computer Science (First Class)",
+    currentRole: "AI Research Scientist at National Center for AI & Robotics (NCAIR)",
+    location: "Abuja, Nigeria",
+    avatarUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
+    linkedInOrEmail: "amina.b@alumni.apexroyal.edu.ng",
+    mentorshipAvailable: true
+  },
+  {
+    id: "alm_03",
+    name: "Chukwudi Eze",
+    admissionNo: "SSS/22/045",
+    graduatingYear: "Class of 2022",
+    tier: "senior_sec",
+    qualificationOrClass: "Senior Secondary (Commercial)",
+    currentRole: "Audit Associate at KPMG Nigeria",
+    location: "Victoria Island, Lagos",
+    avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+    linkedInOrEmail: "c.eze@alumni.apexroyal.edu.ng",
+    mentorshipAvailable: false
+  }
+];
+
+export const mockCommunityPosts: CommunityPost[] = [
+  {
+    id: "post_01",
+    authorName: "Engr. Femi Adeleke",
+    authorRole: "Alumnus (Class of 2020)",
+    authorAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+    isAlumni: true,
+    graduatingYear: "Class of 2020",
+    circle: "careers",
+    title: "Software Engineering & Tech Internship Opportunities for 2026/2027 Graduating Sets",
+    content: "Greetings fellow Apex Royal scholars and alumni! Paystack and partner fintechs in Lagos are opening applications for student summer industrial training (IT/SIWES) and graduate trainee programs. Having graduated from SSS 3 Science here four years ago, I'm glad to mentor and fast-track qualified candidates from our school.",
+    likesCount: 24,
+    hasLiked: false,
+    tags: ["TechCareers", "Internships", "SIWES", "AlumniMentorship"],
+    createdAt: "2 hours ago",
+    comments: [
+      {
+        id: "c_01",
+        authorName: "Tunde Bakare",
+        authorRole: "SSS 3 (Science)",
+        isAlumni: false,
+        content: "Thank you Senior Femi! I'm preparing for WAEC now and aiming for Computer Science at university. Would love to join the tech mentorship circle.",
+        createdAt: "1 hour ago"
+      },
+      {
+        id: "c_02",
+        authorName: "Dr. Amina Bello",
+        authorRole: "Alumna (Class of 2023)",
+        isAlumni: true,
+        graduatingYear: "Class of 2023",
+        content: "Great initiative Femi. I can also support reviewing CVs and SOPs for tertiary scholars targeting research scholarships.",
+        createdAt: "30 mins ago"
+      }
+    ]
+  },
+  {
+    id: "post_02",
+    authorName: "Alumni Executive Secretariat",
+    authorRole: "Apex Royal Global Alumni Association",
+    isAlumni: true,
+    graduatingYear: "Apex Royal Alumni HQ",
+    circle: "alumni",
+    title: "Annual Grand Alumni Homecoming & Innovation Endowment Fund Launch",
+    content: "Attention all past graduating sets from 2015 to 2025 across Primary, Secondary, and Tertiary colleges. The 2026 Homecoming Convention and Alumni Gala Dinner will hold on Saturday, December 12th at the College Grand Hall. We are also inaugurating the Alumni STEM Laboratory Endowment Fund.",
+    likesCount: 38,
+    hasLiked: true,
+    tags: ["Homecoming2026", "AlumniReunion", "EndowmentFund"],
+    createdAt: "1 day ago",
+    comments: [
+      {
+        id: "c_03",
+        authorName: "Chukwudi Eze",
+        authorRole: "Alumnus (Class of 2022)",
+        isAlumni: true,
+        content: "Looking forward to catching up with our 2022 commercial set! Let's organize our set table.",
+        createdAt: "18 hours ago"
+      }
+    ]
+  },
+  {
+    id: "post_03",
+    authorName: "Oluwaseun Adeyemi",
+    authorRole: "300L Computer Science (Current)",
+    isAlumni: false,
+    circle: "academics",
+    title: "Peer Study Group: Tackling CSC 301 Data Structures & Algorithms Past Questions",
+    content: "Fellow undergraduates taking CSC 301 this semester, we are holding a collaborative revision session this Friday at 4 PM in the departmental software lab. We will cover Red-Black trees and dynamic programming problems from past CBT mocks.",
+    likesCount: 15,
+    hasLiked: false,
+    tags: ["CSC301", "StudyGroup", "Algorithms", "PastQuestions"],
+    createdAt: "2 days ago",
+    comments: []
+  }
+];
+
+export const mockClasses: ClassArm[] = [
+  // Primary Wing (Nursery & Basic 1-6)
+  {
+    id: "cls_nur2",
+    name: "Nursery 2 Diamond",
+    tier: "primary",
+    gradeLevel: "Nursery 2",
+    armOrStream: "Diamond Arm",
+    capacity: 25,
+    enrolledCount: 20,
+    formTeacherId: "stf_10",
+    formTeacherName: "Miss Fatima Danladi",
+    classroomBlock: "Early Childhood Block, Room N02",
+    classPrefect: "Zainab Bello",
+    status: "active"
+  },
+  {
+    id: "cls_pri2",
+    name: "Basic 2 Silver",
+    tier: "primary",
+    gradeLevel: "Basic 2",
+    armOrStream: "Silver Arm",
+    capacity: 35,
+    enrolledCount: 29,
+    formTeacherId: "stf_08",
+    formTeacherName: "Mr. Babatunde Balogun",
+    classroomBlock: "Primary Block A, Room 102",
+    classPrefect: "Emeka Okonkwo",
+    status: "active"
+  },
+  {
+    id: "cls_pri4",
+    name: "Basic 4 Gold",
+    tier: "primary",
+    gradeLevel: "Basic 4",
+    armOrStream: "Gold Arm",
+    capacity: 35,
+    enrolledCount: 31,
+    formTeacherId: "stf_01",
+    formTeacherName: "Mrs. Folashade Adeleke",
+    classroomBlock: "Primary Wing, Floor 1, Room 104",
+    classPrefect: "Chidinma Adeleke",
+    status: "active"
+  },
+  {
+    id: "cls_pri5",
+    name: "Basic 5 Gold",
+    tier: "primary",
+    gradeLevel: "Basic 5",
+    armOrStream: "Gold Arm",
+    capacity: 35,
+    enrolledCount: 33,
+    formTeacherId: "stf_06",
+    formTeacherName: "Mr. Chinedu Eze",
+    classroomBlock: "Primary Wing, Floor 2, Room 201",
+    classPrefect: "Ibrahim Garba",
+    status: "active"
+  },
+
+  // Junior Secondary Wing (JSS 1-3 & BECE)
+  {
+    id: "cls_jss1",
+    name: "JSS 1 Arm A",
+    tier: "junior_sec",
+    gradeLevel: "JSS 1",
+    armOrStream: "Arm A",
+    capacity: 40,
+    enrolledCount: 38,
+    formTeacherId: "stf_09",
+    formTeacherName: "Engr. Sunday Alao",
+    classroomBlock: "Junior Secondary Block, Room J101",
+    classPrefect: "Favour Daniels",
+    status: "active"
+  },
+  {
+    id: "cls_jss2",
+    name: "JSS 2 Arm A",
+    tier: "junior_sec",
+    gradeLevel: "JSS 2",
+    armOrStream: "Arm A",
+    capacity: 40,
+    enrolledCount: 36,
+    formTeacherId: "stf_02",
+    formTeacherName: "Mr. Obinna Nnamdi",
+    classroomBlock: "Junior Secondary Block, Room J201",
+    classPrefect: "David Olatunji",
+    status: "active"
+  },
+  {
+    id: "cls_jss3",
+    name: "JSS 3 Arm A (BECE Class)",
+    tier: "junior_sec",
+    gradeLevel: "JSS 3",
+    armOrStream: "Arm A",
+    capacity: 40,
+    enrolledCount: 39,
+    formTeacherId: "stf_02",
+    formTeacherName: "Mr. Obinna Nnamdi",
+    classroomBlock: "Junior Secondary Block, Room J301",
+    classPrefect: "Amina Yusuf",
+    status: "active"
+  },
+
+  // Senior Secondary Wing (SSS 1-3 & WAEC/NECO)
+  {
+    id: "cls_sss2_sci",
+    name: "SSS 2 Science",
+    tier: "senior_sec",
+    gradeLevel: "SSS 2",
+    armOrStream: "Science Stream",
+    capacity: 40,
+    enrolledCount: 37,
+    formTeacherId: "stf_07",
+    formTeacherName: "Mrs. Amina Oladipo",
+    classroomBlock: "Senior Science Complex, Lab 1",
+    classPrefect: "Somtochukwu Obi",
+    status: "active"
+  },
+  {
+    id: "cls_sss3_sci",
+    name: "SSS 3 Science A (WAEC/NECO Set)",
+    tier: "senior_sec",
+    gradeLevel: "SSS 3",
+    armOrStream: "Pure Science Stream",
+    capacity: 40,
+    enrolledCount: 38,
+    formTeacherId: "stf_03",
+    formTeacherName: "Dr. Abdullahi Umar",
+    classroomBlock: "Senior Science Complex, Hall S3",
+    classPrefect: "Tunde Bakare",
+    status: "active"
+  },
+  {
+    id: "cls_sss3_comm",
+    name: "SSS 3 Commercial",
+    tier: "senior_sec",
+    gradeLevel: "SSS 3",
+    armOrStream: "Commercial Stream",
+    capacity: 35,
+    enrolledCount: 32,
+    formTeacherId: "stf_05",
+    formTeacherName: "Alhaji Rasheed Salami (FCA)",
+    classroomBlock: "Senior Commerce Wing, Room C3",
+    classPrefect: "Kehinde Adeyemi",
+    status: "active"
+  },
+  {
+    id: "cls_sss3_arts",
+    name: "SSS 3 Arts & Humanities",
+    tier: "senior_sec",
+    gradeLevel: "SSS 3",
+    armOrStream: "Arts & Humanities Stream",
+    capacity: 35,
+    enrolledCount: 28,
+    formTeacherId: "stf_08",
+    formTeacherName: "Barr. Mrs. Grace Okon",
+    classroomBlock: "Senior Arts Wing, Room A3",
+    classPrefect: "Ngozi Chimamanda",
+    status: "active"
+  },
+
+  // Tertiary Wing (When Unlocked)
+  {
+    id: "cls_uni_csc3",
+    name: "CSC 300 Level (Undergraduate)",
+    tier: "tertiary",
+    gradeLevel: "300 Level",
+    armOrStream: "Department of Computer Science",
+    capacity: 60,
+    enrolledCount: 45,
+    formTeacherId: "stf_04",
+    formTeacherName: "Prof. Kingsley Ogbonna",
+    classroomBlock: "Faculty of Computing, Lab 3",
+    classPrefect: "Oluwaseun Adeyemi",
+    status: "active"
+  },
+
+  // Sub-Program (When Unlocked)
+  {
+    id: "cls_sub_ijmb",
+    name: "IJMB Remedial Science Batch",
+    tier: "sub_program",
+    gradeLevel: "IJMB A-Level",
+    armOrStream: "Remedial Science Cohort",
+    capacity: 50,
+    enrolledCount: 42,
+    formTeacherId: "stf_09",
+    formTeacherName: "Engr. Sunday Alao",
+    classroomBlock: "Remedial Annex Hall 2",
+    classPrefect: "Kelechi Nwosu",
+    status: "active"
+  }
+];
+
+export const initialLicenseConfig: GetoCoreLicenseConfig = {
+  schoolTierMode: 'basic_secondary', // Running Nursery, Primary, Junior Sec, Senior Sec!
+  unlockedTiers: ['primary', 'junior_sec', 'senior_sec'],
+  unlockedServices: {
+    cbt: true,
+    alumniCommunity: true,
+    digitalIdStudio: true,
+    parentPortal: true,
+    bursaryGateways: true
+  },
+  adminMasterKey: "GETO-2026-HQ",
+  licenseStatus: 'active',
+  tenantTierDescription: "Basic & Secondary Enterprise License (Nursery, Primary, JSS 1-3, SSS 1-3)",
+  lastUpdated: "2026-09-14"
+};
+
+export const mockTenantSchools: TenantSchool[] = [
+  {
+    id: "tenant_apex",
+    slug: "apexroyal",
+    name: "Apex Royal Academy & Polytechnic College",
+    motto: "Knowledge, Character, and Innovation for the Nation",
+    country: "Nigeria",
+    countryCode: "NG",
+    flagEmoji: "🇳🇬",
+    city: "Abuja",
+    stateOrRegion: "Federal Capital Territory",
+    currencySymbol: "₦",
+    currencyCode: "NGN",
+    primaryEmail: "admin@apexroyal.edu.ng",
+    phone: "+234 803 555 0199",
+    subdomain: "apexroyal.getocore.edu",
+    logoUrl: "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=100&auto=format&fit=crop&q=80",
+    subscriptionPlan: "enterprise_global",
+    billingCycle: "annual",
+    annualPriceFormatted: "₦3,500,000 / yr",
+    subscriptionStatus: "active",
+    subscriptionExpiry: "2027-10-31",
+    schoolTierMode: "basic_secondary",
+    unlockedTiers: ["primary", "junior_sec", "senior_sec"],
+    unlockedServices: {
+      cbt: true,
+      alumniCommunity: true,
+      digitalIdStudio: true,
+      parentPortal: true,
+      bursaryGateways: true
+    },
+    stats: {
+      totalStudents: 1450,
+      totalStaff: 112,
+      totalClasses: 48,
+      activeSession: "2026/2027",
+      totalRevenueCollected: 148250000
+    },
+    createdAt: "2024-01-15"
+  },
+  {
+    id: "tenant_kings",
+    slug: "kingsheritage",
+    name: "King's Heritage Grammar School",
+    motto: "Excellence and Integrity",
+    country: "Nigeria",
+    countryCode: "NG",
+    flagEmoji: "🇳🇬",
+    city: "Lagos",
+    stateOrRegion: "Lagos State",
+    currencySymbol: "₦",
+    currencyCode: "NGN",
+    primaryEmail: "admissions@kingsheritage.edu.ng",
+    phone: "+234 802 334 1122",
+    subdomain: "kingsheritage.getocore.edu",
+    logoUrl: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=100&auto=format&fit=crop&q=80",
+    subscriptionPlan: "professional",
+    billingCycle: "annual",
+    annualPriceFormatted: "₦1,850,000 / yr",
+    subscriptionStatus: "active",
+    subscriptionExpiry: "2027-04-15",
+    schoolTierMode: "primary_only",
+    unlockedTiers: ["primary"],
+    unlockedServices: {
+      cbt: true,
+      alumniCommunity: false,
+      digitalIdStudio: true,
+      parentPortal: true,
+      bursaryGateways: true
+    },
+    stats: {
+      totalStudents: 620,
+      totalStaff: 45,
+      totalClasses: 18,
+      activeSession: "2026/2027",
+      totalRevenueCollected: 52700000
+    },
+    createdAt: "2024-05-20"
+  },
+  {
+    id: "tenant_greenfield",
+    slug: "greenfield-intl",
+    name: "Greenfield International Academy",
+    motto: "Inspiring Future Leaders of Africa",
+    country: "Ghana",
+    countryCode: "GH",
+    flagEmoji: "🇬🇭",
+    city: "Accra",
+    stateOrRegion: "Greater Accra",
+    currencySymbol: "GH₵",
+    currencyCode: "GHS",
+    primaryEmail: "info@greenfieldacademy.edu.gh",
+    phone: "+233 24 991 4321",
+    subdomain: "greenfield.getocore.edu",
+    logoUrl: "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=100&auto=format&fit=crop&q=80",
+    subscriptionPlan: "enterprise_global",
+    billingCycle: "annual",
+    annualPriceFormatted: "GH₵48,000 / yr",
+    subscriptionStatus: "active",
+    subscriptionExpiry: "2027-08-30",
+    schoolTierMode: "basic_secondary",
+    unlockedTiers: ["primary", "junior_sec", "senior_sec"],
+    unlockedServices: {
+      cbt: true,
+      alumniCommunity: true,
+      digitalIdStudio: true,
+      parentPortal: true,
+      bursaryGateways: true
+    },
+    stats: {
+      totalStudents: 890,
+      totalStaff: 68,
+      totalClasses: 28,
+      activeSession: "2026/2027",
+      totalRevenueCollected: 3120000
+    },
+    createdAt: "2024-08-10"
+  },
+  {
+    id: "tenant_crownbridge",
+    slug: "crownbridge-prep",
+    name: "Crownbridge Preparatory & Sixth Form College",
+    motto: "Tradition, Diligence, and Global Vision",
+    country: "United Kingdom",
+    countryCode: "GB",
+    flagEmoji: "🇬🇧",
+    city: "London",
+    stateOrRegion: "Greater London",
+    currencySymbol: "£",
+    currencyCode: "GBP",
+    primaryEmail: "registry@crownbridgeprep.ac.uk",
+    phone: "+44 20 7946 0912",
+    subdomain: "crownbridge.getocore.edu",
+    logoUrl: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=100&auto=format&fit=crop&q=80",
+    subscriptionPlan: "enterprise_global",
+    billingCycle: "annual",
+    annualPriceFormatted: "£9,500 / yr",
+    subscriptionStatus: "active",
+    subscriptionExpiry: "2027-11-15",
+    schoolTierMode: "custom",
+    unlockedTiers: ["junior_sec", "senior_sec", "sub_program"],
+    unlockedServices: {
+      cbt: true,
+      alumniCommunity: true,
+      digitalIdStudio: true,
+      parentPortal: true,
+      bursaryGateways: true
+    },
+    stats: {
+      totalStudents: 540,
+      totalStaff: 52,
+      totalClasses: 20,
+      activeSession: "2026/2027",
+      totalRevenueCollected: 845000
+    },
+    createdAt: "2024-11-01"
+  },
+  {
+    id: "tenant_alnoor",
+    slug: "alnoor-intl",
+    name: "Al-Noor International School",
+    motto: "Enlightening Minds, Empowering Future Generations",
+    country: "United Arab Emirates",
+    countryCode: "AE",
+    flagEmoji: "🇦🇪",
+    city: "Dubai",
+    stateOrRegion: "Dubai Emirate",
+    currencySymbol: "$",
+    currencyCode: "USD",
+    primaryEmail: "contact@alnoorschool.ae",
+    phone: "+971 4 398 2210",
+    subdomain: "alnoor.getocore.edu",
+    logoUrl: "https://images.unsplash.com/photo-1519452635265-7b1fbfd1e4e0?w=100&auto=format&fit=crop&q=80",
+    subscriptionPlan: "enterprise_global",
+    billingCycle: "annual",
+    annualPriceFormatted: "$14,500 / yr",
+    subscriptionStatus: "active",
+    subscriptionExpiry: "2027-12-05",
+    schoolTierMode: "k12_tertiary",
+    unlockedTiers: ["primary", "junior_sec", "senior_sec", "tertiary"],
+    unlockedServices: {
+      cbt: true,
+      alumniCommunity: true,
+      digitalIdStudio: true,
+      parentPortal: true,
+      bursaryGateways: true
+    },
+    stats: {
+      totalStudents: 1850,
+      totalStaff: 140,
+      totalClasses: 62,
+      activeSession: "2026/2027",
+      totalRevenueCollected: 2450000
+    },
+    createdAt: "2025-01-18"
+  },
+  {
+    id: "tenant_beacon_ke",
+    slug: "nairobi-beacon",
+    name: "Nairobi Beacon College of Technology & Innovation",
+    motto: "Tech Innovation for African Transformation",
+    country: "Kenya",
+    countryCode: "KE",
+    flagEmoji: "🇰🇪",
+    city: "Nairobi",
+    stateOrRegion: "Nairobi County",
+    currencySymbol: "KSh",
+    currencyCode: "KES",
+    primaryEmail: "info@nairobibeacon.ac.ke",
+    phone: "+254 20 699 5000",
+    subdomain: "nairobibeacon.getocore.edu",
+    logoUrl: "https://images.unsplash.com/photo-1562774053-701939374585?w=100&auto=format&fit=crop&q=80",
+    subscriptionPlan: "professional",
+    billingCycle: "annual",
+    annualPriceFormatted: "KSh 320,000 / yr",
+    subscriptionStatus: "active",
+    subscriptionExpiry: "2027-06-20",
+    schoolTierMode: "custom",
+    unlockedTiers: ["tertiary", "sub_program"],
+    unlockedServices: {
+      cbt: true,
+      alumniCommunity: true,
+      digitalIdStudio: true,
+      parentPortal: true,
+      bursaryGateways: true
+    },
+    stats: {
+      totalStudents: 1200,
+      totalStaff: 84,
+      totalClasses: 36,
+      activeSession: "2026/2027",
+      totalRevenueCollected: 16800000
+    },
+    createdAt: "2025-02-12"
+  },
+  {
+    id: "tenant_crestview_us",
+    slug: "crestview-stem",
+    name: "Crestview STEM Academy",
+    motto: "Pioneering Discovery & Creative Engineering",
+    country: "United States",
+    countryCode: "US",
+    flagEmoji: "🇺🇸",
+    city: "Austin",
+    stateOrRegion: "Texas",
+    currencySymbol: "$",
+    currencyCode: "USD",
+    primaryEmail: "admissions@crestviewstem.edu",
+    phone: "+1 512 555 0177",
+    subdomain: "crestview.getocore.edu",
+    logoUrl: "https://images.unsplash.com/photo-1577896851231-70ef18881754?w=100&auto=format&fit=crop&q=80",
+    subscriptionPlan: "enterprise_global",
+    billingCycle: "annual",
+    annualPriceFormatted: "$16,800 / yr",
+    subscriptionStatus: "trial",
+    subscriptionExpiry: "2026-12-15",
+    schoolTierMode: "basic_secondary",
+    unlockedTiers: ["primary", "junior_sec", "senior_sec"],
+    unlockedServices: {
+      cbt: true,
+      alumniCommunity: true,
+      digitalIdStudio: true,
+      parentPortal: true,
+      bursaryGateways: true
+    },
+    stats: {
+      totalStudents: 710,
+      totalStaff: 58,
+      totalClasses: 26,
+      activeSession: "2026/2027",
+      totalRevenueCollected: 640000
+    },
+    createdAt: "2025-06-01"
+  }
+];
+
+export const mockGlobalSaaSMetrics: GlobalSaaSMetrics = {
+  totalSchools: 148,
+  activeSchools: 142,
+  totalStudents: 68450,
+  totalStaff: 4890,
+  annualRecurringRevenueUSD: 2450000,
+  annualRecurringRevenueNGN: 3675000000,
+  serverClusters: [
+    {
+      region: "Africa West",
+      location: "Lagos, Nigeria (NG)",
+      pingMs: 12,
+      status: "optimal"
+    },
+    {
+      region: "Africa East",
+      location: "Nairobi, Kenya (KE)",
+      pingMs: 24,
+      status: "optimal"
+    },
+    {
+      region: "Europe West",
+      location: "London, UK (GB)",
+      pingMs: 18,
+      status: "optimal"
+    },
+    {
+      region: "Middle East",
+      location: "Dubai, UAE (AE)",
+      pingMs: 22,
+      status: "optimal"
+    },
+    {
+      region: "North America East",
+      location: "Ashburn VA, USA (US)",
+      pingMs: 31,
+      status: "optimal"
+    }
+  ]
+};
+
+export const mockGlobalBroadcasts: GlobalBroadcastNotice[] = [
+  {
+    id: "gb_001",
+    title: "GetoCore Cloud Core v3.4.0 Engine Update Deployed",
+    content: "Global core update deployed across all edge clusters. Includes ultra-fast CBT real-time question shuffling, automated multi-currency fee reconciliation, and Nigerian TRCN / UK QTS teacher accreditation verification.",
+    priority: "info",
+    sender: "GetoCore Platform DevOps HQ",
+    targetRegion: "Worldwide (All 148 Subscriber Schools)",
+    createdAt: "2026-09-14 08:30"
+  },
+  {
+    id: "gb_002",
+    title: "International Payment Gateway Routing Optimization",
+    content: "Paystack (NGN & GHS), Stripe (USD & GBP), and Flutterwave international settlement webhooks updated with zero-downtime redundancy. Schools can now receive termly parent payments in over 12 currencies.",
+    priority: "important",
+    sender: "GetoCore Fintech & Bursary Team",
+    targetRegion: "Sub-Saharan Africa & International Schools",
+    createdAt: "2026-09-12 14:15"
+  },
+  {
+    id: "gb_003",
+    title: "Scheduled Cloud Edge Cluster Health Scan",
+    content: "Routine 15-minute telemetry scan scheduled for Lagos (NG-01) and London (UK-02) data clusters on Sunday at 02:00 AM UTC. No school portal interruption expected.",
+    priority: "critical",
+    sender: "GetoCore Infrastructure Security",
+    targetRegion: "Lagos (NG) & London (UK) Edge Nodes",
+    createdAt: "2026-09-10 19:40"
+  }
+];
+
+export const mockBursaryPaymentProofs: BursaryPaymentProofTicket[] = [
+  {
+    id: "proof_001",
+    parentId: "usr_parent",
+    parentName: "Chief Oladipo Adeleke",
+    parentPhone: "+234 803 441 2099",
+    parentEmail: "oladipo.adeleke@gmail.com",
+    studentId: "std_01",
+    studentName: "Chidinma Adeleke",
+    admissionNo: "PR-2024-001",
+    gradeLevel: "Basic 4 Gold",
+    feeType: "First Term Tuition & Development Levy",
+    amount: 45000,
+    paymentMethod: "bank_transfer",
+    referenceOrTellerNo: "NIP/20260912/ZEN/99281",
+    bankName: "Zenith Bank PLC",
+    paymentDate: "2026-09-12",
+    proofAttachmentName: "Zenith_NIP_Receipt_45000.pdf",
+    parentNote: "First installment part-payment of ₦45,000 for Chidinma Adeleke via Zenith Bank mobile app.",
+    status: "verified_cleared",
+    bursarRemark: "Bank credit confirmed on Wema Titan virtual collector. Reconciled and cleared.",
+    bursarName: "Dr. Joshua Adeleke (Chief Bursar)",
+    verifiedAt: "2026-09-13 10:15",
+    createdAt: "2026-09-12 16:40"
+  },
+  {
+    id: "proof_002",
+    parentId: "usr_parent",
+    parentName: "Chief Oladipo Adeleke",
+    parentPhone: "+234 803 441 2099",
+    parentEmail: "oladipo.adeleke@gmail.com",
+    studentId: "std_04",
+    studentName: "Tunde Bakare",
+    admissionNo: "SEC-2022-042",
+    gradeLevel: "SSS 3 Science A",
+    feeType: "First Term Tuition, WAEC/NECO & Science Lab Fees",
+    amount: 85000,
+    paymentMethod: "bank_branch",
+    referenceOrTellerNo: "TEL-GTB-2026-90412",
+    bankName: "Guaranty Trust Bank",
+    paymentDate: "2026-09-14",
+    proofAttachmentName: "GTB_Deposit_Teller_Slip_85k.jpg",
+    parentNote: "Branch deposit slip for Tunde Bakare's WAEC/NECO practical levy at GTBank Garki branch Abuja.",
+    status: "submitted",
+    createdAt: "2026-09-14 11:30"
+  }
+];
+
+export const mockParentBursaryMessages: ParentBursaryMessage[] = [
+  {
+    id: "msg_001",
+    parentId: "usr_parent",
+    parentName: "Chief Oladipo Adeleke",
+    senderRole: "parent",
+    subject: "Application for Sibling Rebate & Installment Concession",
+    message: "Good day Office of the Chief Bursar. I have two children currently enrolled (Chidinma in Basic 4 and Tunde in SSS 3). Kindly confirm if the 10% sibling discount applies to Tunde's terminal tuition, and whether we can schedule the remaining balance across two installments before WAEC mock exams.",
+    wardId: "std_04",
+    wardName: "Tunde Bakare",
+    isRead: true,
+    createdAt: "2026-09-11 09:20"
+  },
+  {
+    id: "msg_002",
+    parentId: "usr_parent",
+    parentName: "Chief Oladipo Adeleke",
+    senderRole: "bursar",
+    subject: "RE: Application for Sibling Rebate & Installment Concession",
+    message: "Dear Chief Adeleke, Warm greetings from the Bursary Directorate. Yes, our institutional sibling concession grants a 10% rebate on the 2nd sibling's tuition (credited to Tunde's ledger: ₦12,500 saving). Your 2-part installment payment schedule is hereby approved. Once the initial 60% threshold is reached, automated exam clearance will be granted.",
+    wardId: "std_04",
+    wardName: "Tunde Bakare",
+    isRead: true,
+    createdAt: "2026-09-11 14:45"
+  },
+  {
+    id: "msg_003",
+    parentId: "usr_parent",
+    parentName: "Chief Oladipo Adeleke",
+    senderRole: "parent",
+    subject: "Proof of Payment Uploaded for Chidinma & Tunde",
+    message: "Thank you Dr. Adeleke. I have just uploaded the transfer receipt and GTBank deposit teller slip on the portal. Kindly acknowledge once the bursary clearance is updated.",
+    wardId: "std_01",
+    wardName: "Chidinma Adeleke",
+    isRead: false,
+    createdAt: "2026-09-14 11:35"
+  }
+];
+
