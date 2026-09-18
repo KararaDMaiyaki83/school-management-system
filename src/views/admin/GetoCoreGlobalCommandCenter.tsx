@@ -34,10 +34,12 @@ import {
   Briefcase,
   Mail,
   Phone,
-  Clock
+  Clock,
+  FileText
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { EducationalTier, TenantSchool, GlobalBroadcastNotice } from '../../types';
+import { SchoolOnboardingKitTab } from './SchoolOnboardingKitTab';
 
 export const GetoCoreGlobalCommandCenter: React.FC = () => {
   const { 
@@ -54,7 +56,7 @@ export const GetoCoreGlobalCommandCenter: React.FC = () => {
   } = useApp();
 
   // Tab State
-  const [activeTab, setActiveTab] = useState<'directory' | 'onboard' | 'clusters' | 'broadcasts'>('directory');
+  const [activeTab, setActiveTab] = useState<'directory' | 'onboard' | 'intake_kit' | 'clusters' | 'broadcasts'>('directory');
 
   // Directory Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -282,6 +284,14 @@ export const GetoCoreGlobalCommandCenter: React.FC = () => {
             </button>
 
             <button
+              onClick={() => setActiveTab('intake_kit')}
+              className="px-4 py-3 rounded-2xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-sm font-semibold border border-slate-700 flex items-center space-x-2 transition-colors"
+            >
+              <FileText className="w-4 h-4 text-amber-400" />
+              <span>Intake Form Kit</span>
+            </button>
+
+            <button
               onClick={() => setActivePage('getocore_admin')}
               className="px-4 py-3 rounded-2xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-sm font-semibold border border-slate-700 flex items-center space-x-2 transition-colors"
             >
@@ -373,6 +383,18 @@ export const GetoCoreGlobalCommandCenter: React.FC = () => {
         >
           <Plus className="w-4 h-4 text-emerald-500" />
           <span>Onboard New Institution</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('intake_kit')}
+          className={`px-4 py-2.5 rounded-xl font-bold text-sm flex items-center space-x-2 transition-all ${
+            activeTab === 'intake_kit'
+              ? 'bg-slate-900 text-white shadow-md'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+          }`}
+        >
+          <FileText className="w-4 h-4 text-amber-500" />
+          <span>Onboarding Intake Kit & Form</span>
         </button>
 
         <button
@@ -1051,6 +1073,16 @@ export const GetoCoreGlobalCommandCenter: React.FC = () => {
             )}
           </form>
         </div>
+      )}
+
+      {/* TAB 2B: ONBOARDING DATA INTAKE KIT & FORM */}
+      {activeTab === 'intake_kit' && (
+        <SchoolOnboardingKitTab 
+          onGoToOnboard={() => { 
+            setActiveTab('onboard'); 
+            setOnboardStep(1); 
+          }} 
+        />
       )}
 
       {/* TAB 3: GLOBAL EDGE INFRASTRUCTURE */}
