@@ -43,7 +43,10 @@ import {
   mockGlobalSaaSMetrics,
   mockGlobalBroadcasts,
   mockBursaryPaymentProofs,
-  mockParentBursaryMessages
+  mockParentBursaryMessages,
+  sampleDemoWards,
+  sampleDemoGrades,
+  sampleDemoInvoices
 } from '../data/mockData';
 
 const safeGetItem = (key: string): string | null => {
@@ -151,6 +154,7 @@ interface AppContextType {
   users: User[];
   addUser: (user: User) => void;
   resetDatabaseToCleanState: () => void;
+  loadDemoParentWards: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -490,6 +494,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (found.wardIds && found.wardIds.length > 0) {
           setSelectedWardId(found.wardIds[0]);
         }
+        if (students.length === 0 && (found.id === 'usr_parent' || found.email === 'parent@apexroyal.edu.ng')) {
+          loadDemoParentWards();
+        }
       } else if (found.tier && found.tier !== 'all') {
         setActiveTier(found.tier);
         setActivePage('overview');
@@ -499,6 +506,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return true;
     }
     return false;
+  };
+
+  const loadDemoParentWards = () => {
+    setStudents(prev => {
+      const existingIds = new Set(prev.map(s => s.id));
+      const toAdd = sampleDemoWards.filter(w => !existingIds.has(w.id));
+      const updated = [...toAdd, ...prev];
+      safeSetItem('edusphere_students', JSON.stringify(updated));
+      return updated;
+    });
+    setGrades(prev => {
+      const existingIds = new Set(prev.map(g => g.id));
+      const toAdd = sampleDemoGrades.filter(g => !existingIds.has(g.id));
+      const updated = [...toAdd, ...prev];
+      safeSetItem('edusphere_grades', JSON.stringify(updated));
+      return updated;
+    });
+    setInvoices(prev => {
+      const existingIds = new Set(prev.map(i => i.id));
+      const toAdd = sampleDemoInvoices.filter(i => !existingIds.has(i.id));
+      const updated = [...toAdd, ...prev];
+      safeSetItem('edusphere_invoices', JSON.stringify(updated));
+      return updated;
+    });
+    setSelectedWardId('std_01');
   };
 
   const resetDatabaseToCleanState = () => {
@@ -546,6 +578,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addStudent = (newStudent: Omit<Student, 'id'>) => {
     const student: Student = { ...newStudent, id: `std_${Date.now()}` };
     setStudents(prev => [student, ...prev]);
+
+    // Auto-create or link parent user
+    if (newStudent.guardianEmail) {
+      setUsers(prev => {
+        const existingParent = prev.find(u => u.email.toLowerCase() === newStudent.guardianEmail.toLowerCase());
+        if (existingParent) {
+          const updatedWards = Array.from(new Set([...(existingParent.wardIds || []), student.id]));
+          return prev.map(u => u.id === existingParent.id ? { ...u, wardIds: updatedWards } : u);
+        } else {
+          const newParentUser: User = {
+            id: `usr_parent_${Date.now()}`,
+            name: newStudent.guardianName || 'Parent / Guardian',
+            email: newStudent.guardianEmail,
+            role: 'parent',
+            phone: newStudent.guardianPhone,
+            identifierId: `PAR-${Math.floor(1000 + Math.random() * 9000)}`,
+            wardIds: [student.id]
+          };
+          return [newParentUser, ...prev];
+        }
+      });
+    }
   };
 
   const updateStudent = (id: string, updates: Partial<Student>) => {
@@ -911,7 +965,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         recordConsolidatedFamilyPayment,
         users,
         addUser,
-        resetDatabaseToCleanState
+        resetDatabaseToCleanState,
+        loadDemoParentWards
       }}
     >
       {children}

@@ -43,6 +43,7 @@ import { Student, InvoiceRecord, BursaryPaymentProofTicket, ParentBursaryMessage
 
 export const ParentPortalPage: React.FC = () => {
   const { 
+    currentUser,
     students, 
     grades, 
     invoices, 
@@ -54,17 +55,74 @@ export const ParentPortalPage: React.FC = () => {
     sendParentBursaryMessage,
     selectedWardId, 
     setSelectedWardId,
-    settings 
+    settings,
+    setActivePage,
+    loadDemoParentWards
   } = useApp();
 
   // Active navigation tab
-  const [activeTab, setActiveTab] = useState<'overview' | 'calculator' | 'payments' | 'bursary_desk'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'calculator' | 'payments' | 'bursary_desk' | 'directory'>('overview');
 
-  // Wards linked to parent (default to Chidinma and Tunde)
-  const myWards = students.filter(s => s.guardianName.includes('Adeleke') || s.id === 'std_01' || s.id === 'std_04');
+  // Group all students into families for Admin inspection
+  const families = React.useMemo(() => {
+    const map = new Map<string, Student[]>();
+    students.forEach(s => {
+      const guardian = s.guardianName?.trim() || 'Parent / Guardian';
+      if (!map.has(guardian)) {
+        map.set(guardian, []);
+      }
+      map.get(guardian)!.push(s);
+    });
+    return Array.from(map.entries()).map(([guardianName, wards]) => ({
+      guardianName,
+      wards,
+      phone: wards[0]?.guardianPhone || 'N/A',
+      email: wards[0]?.guardianEmail || 'N/A',
+      totalBalance: invoices.filter(inv => wards.some(w => w.id === inv.studentId)).reduce((sum, inv) => sum + inv.balance, 0),
+      allPaid: wards.every(w => w.feeStatus === 'paid')
+    }));
+  }, [students, invoices]);
+
+  const [selectedGuardian, setSelectedGuardian] = useState<string>('');
+
+  // Dynamically resolve wards linked to current session or selected family
+  const myWards = React.useMemo(() => {
+    if (currentUser?.role === 'parent') {
+      if (currentUser.wardIds && currentUser.wardIds.length > 0) {
+        const matching = students.filter(s => currentUser.wardIds!.includes(s.id));
+        if (matching.length > 0) return matching;
+      }
+      const byEmailOrName = students.filter(s => 
+        (s.guardianEmail && s.guardianEmail.toLowerCase() === currentUser.email?.toLowerCase()) ||
+        (s.guardianName && s.guardianName.toLowerCase().includes(currentUser.name?.toLowerCase() || ''))
+      );
+      if (byEmailOrName.length > 0) return byEmailOrName;
+    }
+
+    if (selectedGuardian) {
+      const fam = families.find(f => f.guardianName === selectedGuardian);
+      if (fam && fam.wards.length > 0) return fam.wards;
+    }
+
+    const adeleke = students.filter(s => s.guardianName?.includes('Adeleke') || s.id === 'std_01' || s.id === 'std_04');
+    if (adeleke.length > 0) return adeleke;
+
+    if (families.length > 0) return families[0].wards;
+
+    if (students.length > 0) return students;
+
+    return [];
+  }, [currentUser, students, selectedGuardian, families]);
   
-  // Active selected ward for academic inspection
-  const activeWard = students.find(s => s.id === selectedWardId) || myWards[0] || students[0];
+  // Active selected ward for academic inspection (safe fallback)
+  const activeWard = myWards.find(s => s.id === selectedWardId) || myWards[0] || null;
+
+  // Family naming
+  const activeFamilyName = currentUser?.role === 'parent' 
+    ? (currentUser.name || 'Adeleke Family')
+    : (myWards[0]?.guardianName ? `${myWards[0].guardianName} Family` : 'Adeleke Family');
+
+  const isAdmin = currentUser?.role === 'super_admin' || currentUser?.role === 'getocore_admin' || currentUser?.role === 'principal_head' || currentUser?.role === 'bursar' || currentUser?.role === 'teacher_lecturer';
 
   // Ward specific records
   const wardGrades = grades.filter(g => g.studentId === activeWard?.id);
@@ -118,7 +176,7 @@ export const ParentPortalPage: React.FC = () => {
 
   // Payment Proof Submission Form State
   const [proofForm, setProofForm] = useState({
-    studentId: myWards[0]?.id || 'std_01',
+    studentId: myWards[0]?.id || '',
     amount: 45000,
     paymentMethod: 'bank_transfer' as BursaryPaymentProofTicket['paymentMethod'],
     referenceOrTellerNo: '',
@@ -200,10 +258,10 @@ export const ParentPortalPage: React.FC = () => {
           id: `inv_fam_${Date.now()}`,
           invoiceNo: `FAM-RCP-${Date.now().toString().slice(-6)}`,
           studentId: 'multi_ward_family',
-          studentName: `Adeleke Family Consolidated (Chidinma & Tunde)`,
+          studentName: `${activeFamilyName} Consolidated (${myWards.map(w => w.firstName).join(' & ') || 'Wards'})`,
           admissionNo: 'FAMILY-CLEARANCE',
           tier: 'all',
-          classOrDept: 'Primary 4 & SSS 3',
+          classOrDept: myWards.map(w => w.classOrDept).join(', ') || 'All Wards',
           session: settings.currentSession,
           termOrSemester: settings.currentTermOrSemester,
           feeType: 'Multi-Ward Consolidated Tuition & Levies Clearance',
@@ -289,13 +347,13 @@ export const ParentPortalPage: React.FC = () => {
     if (!bursaryMessageText.trim() || !bursaryMessageSubject.trim()) return;
 
     sendParentBursaryMessage({
-      parentId: 'usr_parent',
-      parentName: 'Chief Oladipo Adeleke',
+      parentId: currentUser?.id || 'usr_parent',
+      parentName: currentUser?.name || activeFamilyName,
       senderRole: 'parent',
       subject: bursaryMessageSubject,
       message: bursaryMessageText,
       wardId: activeWard?.id,
-      wardName: `${activeWard?.firstName} ${activeWard?.lastName}`
+      wardName: activeWard ? `${activeWard.firstName} ${activeWard.lastName}` : 'Enrolled Scholar'
     });
 
     setBursaryMsgSentSuccess(true);
@@ -374,13 +432,34 @@ export const ParentPortalPage: React.FC = () => {
             </h1>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Official portal for Chief Oladipo Adeleke • Academic progress, multi-ward accounting, Paystack/Bank payments, and direct Bursary liaison.
+            Official portal for {activeFamilyName} • Academic progress, multi-ward accounting, Paystack/Bank payments, and direct Bursary liaison.
           </p>
         </div>
 
-        <div className="flex items-center space-x-2 text-xs text-slate-600 bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-xs">
-          <Phone className="w-3.5 h-3.5 text-emerald-700" />
-          <span>Chief Bursar Helpline: <strong>+234 803 555 0199</strong></span>
+        <div className="flex flex-wrap items-center gap-2">
+          {isAdmin && families.length > 0 && (
+            <div className="flex items-center space-x-2 bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-xl text-xs">
+              <Users className="w-3.5 h-3.5 text-purple-700" />
+              <span className="text-purple-900 font-semibold">Inspect Family:</span>
+              <select
+                value={selectedGuardian}
+                onChange={e => setSelectedGuardian(e.target.value)}
+                className="bg-white border border-purple-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-800 outline-none"
+              >
+                <option value="">{families[0]?.guardianName ? `${families[0].guardianName} (Default)` : 'Select Family'}</option>
+                {families.map(f => (
+                  <option key={f.guardianName} value={f.guardianName}>
+                    {f.guardianName} ({f.wards.length} {f.wards.length === 1 ? 'ward' : 'wards'})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div className="flex items-center space-x-2 text-xs text-slate-600 bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-xs">
+            <Phone className="w-3.5 h-3.5 text-emerald-700" />
+            <span>Chief Bursar Helpline: <strong>+234 803 555 0199</strong></span>
+          </div>
         </div>
       </div>
 
@@ -392,21 +471,26 @@ export const ParentPortalPage: React.FC = () => {
           <div className="space-y-2">
             <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-500/30">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Consolidated Family Ledger • {myWards.length} Enrolled Scholars</span>
+              <span>Consolidated Family Ledger • {myWards.length} Enrolled {myWards.length === 1 ? 'Scholar' : 'Scholars'}</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-              Adeleke Family Account
+              {activeFamilyName} Account
             </h2>
             <div className="flex flex-wrap items-center gap-3 text-xs text-slate-300">
-              <span className="flex items-center gap-1.5 bg-slate-800/80 px-2.5 py-1 rounded-lg">
-                👧 Chidinma (Basic 4 Gold)
-              </span>
-              <span className="flex items-center gap-1.5 bg-slate-800/80 px-2.5 py-1 rounded-lg">
-                👦 Tunde (SSS 3 Science A)
-              </span>
-              <span className="text-emerald-400 font-semibold">
-                • 10% Sibling Discount Enforced
-              </span>
+              {myWards.length > 0 ? (
+                myWards.map(w => (
+                  <span key={w.id} className="flex items-center gap-1.5 bg-slate-800/80 px-2.5 py-1 rounded-lg">
+                    {w.firstName} ({w.classOrDept})
+                  </span>
+                ))
+              ) : (
+                <span className="text-slate-400 italic">No scholars currently linked to this profile</span>
+              )}
+              {myWards.length > 1 && (
+                <span className="text-emerald-400 font-semibold">
+                  • 10% Sibling Discount Enforced
+                </span>
+              )}
             </div>
           </div>
 
@@ -438,12 +522,14 @@ export const ParentPortalPage: React.FC = () => {
                   <CheckCircle2 className="w-4 h-4" />
                   <span>All Family Fees Cleared</span>
                 </div>
-                <button
-                  onClick={() => setShowClearanceModal(true)}
-                  className="w-full text-center text-[11px] text-emerald-400 underline font-semibold hover:text-emerald-300 pt-1"
-                >
-                  Print Examination Clearance Pass
-                </button>
+                {myWards.length > 0 && (
+                  <button
+                    onClick={() => setShowClearanceModal(true)}
+                    className="w-full text-center text-[11px] text-emerald-400 underline font-semibold hover:text-emerald-300 pt-1"
+                  >
+                    Print Examination Clearance Pass
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -461,7 +547,9 @@ export const ParentPortalPage: React.FC = () => {
           </div>
           <div>
             <span className="text-slate-400 block text-[10px]">Sibling Discount Savings</span>
-            <strong className="text-amber-400 font-bold text-sm">₦12,500 (10% Rebate)</strong>
+            <strong className="text-amber-400 font-bold text-sm">
+              ₦{totalFamilySiblingDiscount.toLocaleString()} {totalFamilySiblingDiscount > 0 ? '(10% Rebate)' : '(N/A)'}
+            </strong>
           </div>
           <div>
             <span className="text-slate-400 block text-[10px]">Bursary Exam Standing</span>
@@ -525,158 +613,254 @@ export const ParentPortalPage: React.FC = () => {
             <span className="w-2 h-2 rounded-full bg-rose-500"></span>
           )}
         </button>
+
+        <button
+          onClick={() => setActiveTab('directory')}
+          className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center space-x-2 transition-all ${
+            activeTab === 'directory'
+              ? 'bg-slate-900 text-white shadow-md'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+          }`}
+        >
+          <Users className="w-4 h-4 text-purple-500" />
+          <span>Parent & Guardian Register ({families.length})</span>
+        </button>
       </div>
 
-      {/* TAB 1: ACADEMIC & ATTENDANCE OVERSIGHT */}
-      {activeTab === 'overview' && (
-        <div className="space-y-6">
-          {/* Ward Selector Ribbon */}
-          <div className="bg-white p-4 rounded-3xl border border-slate-200 shadow-xs">
-            <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2.5 flex items-center justify-between">
-              <span>Select Child to Inspect Records:</span>
-              <span className="text-emerald-700 font-semibold">{myWards.length} Wards Linked</span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {myWards.map((ward) => {
-                const isSelected = activeWard?.id === ward.id;
-                return (
-                  <div
-                    key={ward.id}
-                    onClick={() => setSelectedWardId(ward.id)}
-                    className={`flex items-center p-3.5 rounded-2xl border cursor-pointer transition-all ${
-                      isSelected
-                        ? 'border-rose-600 bg-rose-50/50 shadow-sm ring-1 ring-rose-600'
-                        : 'border-slate-200 hover:border-slate-300 bg-slate-50/40'
-                    }`}
-                  >
-                    <div className="w-11 h-11 rounded-xl overflow-hidden bg-slate-200 mr-3 shrink-0 ring-2 ring-white">
-                      {ward.avatarUrl ? (
-                        <img src={ward.avatarUrl} alt={ward.firstName} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center font-bold text-slate-600 text-xs">
-                          {ward.firstName[0]}
-                        </div>
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="font-extrabold text-sm text-slate-900 truncate">
-                        {ward.firstName} {ward.lastName}
-                      </div>
-                      <div className="text-xs text-slate-500 font-medium">
-                        {ward.classOrDept} • {ward.admissionNo}
-                      </div>
-                      <div className="mt-1 flex items-center space-x-2">
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
-                          ward.feeStatus === 'paid' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
-                        }`}>
-                          {ward.feeStatus === 'paid' ? 'Fees Cleared' : `₦${ward.feeBalance.toLocaleString()} Due`}
-                        </span>
-                        <span className="text-[10px] text-slate-400">
-                          {ward.attendanceRate}% Attendance
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+      {/* ZERO WARDS CALLOUT BANNER */}
+      {myWards.length === 0 && (
+        <div className="bg-white rounded-3xl border-2 border-dashed border-amber-300 bg-amber-50/40 p-6 sm:p-8 text-center space-y-4 shadow-xs">
+          <div className="w-14 h-14 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center mx-auto shadow-xs">
+            <Users className="w-7 h-7" />
+          </div>
+          <div className="max-w-xl mx-auto space-y-1.5">
+            <h3 className="text-lg font-black text-slate-900">
+              No Enrolled Scholars Linked to this Parent Profile
+            </h3>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              {currentUser?.role === 'parent'
+                ? `Welcome, ${currentUser.name || 'Parent / Guardian'}! The school admissions registry currently has no active student records assigned to your email address (${currentUser.email}). Once the school records your children, your terminal reports, fee invoices, and Paystack receipts will load here automatically.`
+                : 'The system database has been cleared for school onboarding. In live production, registered students automatically link to their parent/guardian accounts here.'}
+            </p>
           </div>
 
-          {/* Academic Continuous Assessment Table */}
-          <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <h3 className="text-base font-bold text-slate-900">
-                  Continuous Assessment & Terminal Scores — {activeWard.firstName}
-                </h3>
-                <p className="text-xs text-slate-500">Live breakdown of CA1 (20), CA2 (20), and Terminal Exam (60)</p>
-              </div>
-              <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-xl">
-                NERDC Standard Evaluation
-              </span>
-            </div>
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <button
+              onClick={() => loadDemoParentWards()}
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-700 to-teal-700 hover:from-emerald-800 hover:to-teal-800 text-white font-extrabold text-xs shadow-md shadow-emerald-700/20 flex items-center space-x-2 transition-all hover:scale-105"
+            >
+              <Sparkles className="w-4 h-4 text-emerald-300" />
+              <span>Load Sample Adeleke Family Wards (Demo)</span>
+            </button>
 
-            {wardGrades.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
-                    <tr>
-                      <th className="p-3">Subject</th>
-                      <th className="p-3">CA1 (20)</th>
-                      <th className="p-3">CA2 (20)</th>
-                      <th className="p-3">Exam (60)</th>
-                      <th className="p-3">Total (100)</th>
-                      <th className="p-3">Grade</th>
-                      <th className="p-3">Teacher's Remark</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {wardGrades.map((g) => (
-                      <tr key={g.id} className="hover:bg-slate-50">
-                        <td className="p-3 font-bold text-slate-900">
-                          <div>{g.subjectName}</div>
-                          <span className="text-[10px] text-slate-400 font-mono">{g.subjectCode}</span>
-                        </td>
-                        <td className="p-3 font-mono text-slate-700">{g.ca1Score}</td>
-                        <td className="p-3 font-mono text-slate-700">{g.ca2Score}</td>
-                        <td className="p-3 font-mono text-slate-700">{g.examScore}</td>
-                        <td className="p-3 font-mono font-bold text-slate-900">{g.totalScore}%</td>
-                        <td className="p-3">
-                          <span className="px-2 py-0.5 rounded-md font-extrabold text-[11px] bg-emerald-100 text-emerald-800">
-                            {g.grade}
-                          </span>
-                        </td>
-                        <td className="p-3 text-slate-600 max-w-xs leading-relaxed">{g.remarks}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="p-6 text-center text-xs text-slate-500 bg-slate-50 rounded-xl">
-                Terminal examination compilation in progress. Continuous assessments updated weekly.
-              </div>
-            )}
-
-            {/* Psychomotor Ratings for Primary Ward */}
-            {activeWard.tier === 'primary' && wardGrades[0]?.psychomotor && (
-              <div className="p-4 rounded-2xl bg-amber-50/50 border border-amber-200">
-                <h4 className="text-xs font-bold text-amber-900 uppercase tracking-wider mb-2">
-                  Behavioral & Affective Domain Evaluation (Scale of 1 to 5)
-                </h4>
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
-                  <div className="bg-white p-2.5 rounded-xl border border-amber-200/80 text-center">
-                    <span className="text-slate-500 block text-[10px]">Punctuality</span>
-                    <strong className="text-amber-800 text-sm font-bold">{wardGrades[0].psychomotor.punctuality} / 5</strong>
-                  </div>
-                  <div className="bg-white p-2.5 rounded-xl border border-amber-200/80 text-center">
-                    <span className="text-slate-500 block text-[10px]">Neatness</span>
-                    <strong className="text-amber-800 text-sm font-bold">{wardGrades[0].psychomotor.neatness} / 5</strong>
-                  </div>
-                  <div className="bg-white p-2.5 rounded-xl border border-amber-200/80 text-center">
-                    <span className="text-slate-500 block text-[10px]">Politeness</span>
-                    <strong className="text-amber-800 text-sm font-bold">{wardGrades[0].psychomotor.politeness} / 5</strong>
-                  </div>
-                  <div className="bg-white p-2.5 rounded-xl border border-amber-200/80 text-center">
-                    <span className="text-slate-500 block text-[10px]">Attentiveness</span>
-                    <strong className="text-amber-800 text-sm font-bold">{wardGrades[0].psychomotor.attentiveness} / 5</strong>
-                  </div>
-                  <div className="bg-white p-2.5 rounded-xl border border-amber-200/80 text-center">
-                    <span className="text-slate-500 block text-[10px]">Sports & Gym</span>
-                    <strong className="text-amber-800 text-sm font-bold">{wardGrades[0].psychomotor.sportsAndGym} / 5</strong>
-                  </div>
-                </div>
-              </div>
+            {isAdmin && (
+              <button
+                onClick={() => setActivePage('students')}
+                className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center space-x-2 shadow-xs"
+              >
+                <Users className="w-4 h-4" />
+                <span>Go to Student Admissions Register</span>
+              </button>
             )}
           </div>
         </div>
       )}
 
+      {/* TAB 1: ACADEMIC & ATTENDANCE OVERSIGHT */}
+      {activeTab === 'overview' && (
+        myWards.length === 0 ? (
+          <div className="bg-white p-8 rounded-3xl border border-slate-200 text-center space-y-4 shadow-xs">
+            <div className="w-16 h-16 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
+              <Award className="w-8 h-8" />
+            </div>
+            <div className="max-w-md mx-auto space-y-1">
+              <h3 className="text-lg font-extrabold text-slate-900">No Academic Records to Display</h3>
+              <p className="text-xs text-slate-500">
+                Link or register your wards to view continuous assessments (CA1, CA2), terminal examination results, affective ratings, and attendance logs.
+              </p>
+            </div>
+            <div className="pt-2 flex justify-center gap-3">
+              <button
+                onClick={() => loadDemoParentWards()}
+                className="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs flex items-center space-x-2 shadow-sm"
+              >
+                <Sparkles className="w-4 h-4 text-emerald-300" />
+                <span>Load Sample Adeleke Family Wards (Demo)</span>
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Ward Selector Ribbon */}
+            <div className="bg-white p-4 rounded-3xl border border-slate-200 shadow-xs">
+              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2.5 flex items-center justify-between">
+                <span>Select Child to Inspect Records:</span>
+                <span className="text-emerald-700 font-semibold">{myWards.length} Wards Linked</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {myWards.map((ward) => {
+                  const isSelected = activeWard?.id === ward.id;
+                  return (
+                    <div
+                      key={ward.id}
+                      onClick={() => setSelectedWardId(ward.id)}
+                      className={`flex items-center p-3.5 rounded-2xl border cursor-pointer transition-all ${
+                        isSelected
+                          ? 'border-rose-600 bg-rose-50/50 shadow-sm ring-1 ring-rose-600'
+                          : 'border-slate-200 hover:border-slate-300 bg-slate-50/40'
+                      }`}
+                    >
+                      <div className="w-11 h-11 rounded-xl overflow-hidden bg-slate-200 mr-3 shrink-0 ring-2 ring-white">
+                        {ward.avatarUrl ? (
+                          <img src={ward.avatarUrl} alt={ward.firstName} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center font-bold text-slate-600 text-xs">
+                            {ward.firstName?.[0] || 'S'}
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-extrabold text-sm text-slate-900 truncate">
+                          {ward.firstName} {ward.lastName}
+                        </div>
+                        <div className="text-xs text-slate-500 font-medium">
+                          {ward.classOrDept} • {ward.admissionNo}
+                        </div>
+                        <div className="mt-1 flex items-center space-x-2">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                            ward.feeStatus === 'paid' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                          }`}>
+                            {ward.feeStatus === 'paid' ? 'Fees Cleared' : `₦${ward.feeBalance.toLocaleString()} Due`}
+                          </span>
+                          <span className="text-[10px] text-slate-400">
+                            {ward.attendanceRate}% Attendance
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Academic Continuous Assessment Table */}
+            <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">
+                    Continuous Assessment & Terminal Scores — {activeWard?.firstName || 'Enrolled Scholar'}
+                  </h3>
+                  <p className="text-xs text-slate-500">Live breakdown of CA1 (20), CA2 (20), and Terminal Exam (60)</p>
+                </div>
+                <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-xl">
+                  NERDC Standard Evaluation
+                </span>
+              </div>
+
+              {wardGrades.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                      <tr>
+                        <th className="p-3">Subject</th>
+                        <th className="p-3">CA1 (20)</th>
+                        <th className="p-3">CA2 (20)</th>
+                        <th className="p-3">Exam (60)</th>
+                        <th className="p-3">Total (100)</th>
+                        <th className="p-3">Grade</th>
+                        <th className="p-3">Teacher's Remark</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {wardGrades.map((g) => (
+                        <tr key={g.id} className="hover:bg-slate-50">
+                          <td className="p-3 font-bold text-slate-900">
+                            <div>{g.subjectName}</div>
+                            <span className="text-[10px] text-slate-400 font-mono">{g.subjectCode}</span>
+                          </td>
+                          <td className="p-3 font-mono text-slate-700">{g.ca1Score}</td>
+                          <td className="p-3 font-mono text-slate-700">{g.ca2Score}</td>
+                          <td className="p-3 font-mono text-slate-700">{g.examScore}</td>
+                          <td className="p-3 font-mono font-bold text-slate-900">{g.totalScore}%</td>
+                          <td className="p-3">
+                            <span className="px-2 py-0.5 rounded-md font-extrabold text-[11px] bg-emerald-100 text-emerald-800">
+                              {g.grade}
+                            </span>
+                          </td>
+                          <td className="p-3 text-slate-600 max-w-xs leading-relaxed">{g.remarks}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="p-6 text-center text-xs text-slate-500 bg-slate-50 rounded-xl">
+                  Terminal examination compilation in progress. Continuous assessments updated weekly.
+                </div>
+              )}
+
+              {/* Psychomotor Ratings for Primary Ward */}
+              {activeWard?.tier === 'primary' && wardGrades[0]?.psychomotor && (
+                <div className="p-4 rounded-2xl bg-amber-50/50 border border-amber-200">
+                  <h4 className="text-xs font-bold text-amber-900 uppercase tracking-wider mb-2">
+                    Behavioral & Affective Domain Evaluation (Scale of 1 to 5)
+                  </h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
+                    <div className="bg-white p-2.5 rounded-xl border border-amber-200/80 text-center">
+                      <span className="text-slate-500 block text-[10px]">Punctuality</span>
+                      <strong className="text-amber-800 text-sm font-bold">{wardGrades[0].psychomotor.punctuality ?? 5} / 5</strong>
+                    </div>
+                    <div className="bg-white p-2.5 rounded-xl border border-amber-200/80 text-center">
+                      <span className="text-slate-500 block text-[10px]">Neatness</span>
+                      <strong className="text-amber-800 text-sm font-bold">{wardGrades[0].psychomotor.neatness ?? 5} / 5</strong>
+                    </div>
+                    <div className="bg-white p-2.5 rounded-xl border border-amber-200/80 text-center">
+                      <span className="text-slate-500 block text-[10px]">Politeness</span>
+                      <strong className="text-amber-800 text-sm font-bold">{wardGrades[0].psychomotor.politeness ?? 5} / 5</strong>
+                    </div>
+                    <div className="bg-white p-2.5 rounded-xl border border-amber-200/80 text-center">
+                      <span className="text-slate-500 block text-[10px]">Attentiveness</span>
+                      <strong className="text-amber-800 text-sm font-bold">{wardGrades[0].psychomotor.attentiveness ?? 5} / 5</strong>
+                    </div>
+                    <div className="bg-white p-2.5 rounded-xl border border-amber-200/80 text-center">
+                      <span className="text-slate-500 block text-[10px]">Sports & Gym</span>
+                      <strong className="text-amber-800 text-sm font-bold">{wardGrades[0].psychomotor.sportsAndGym ?? 4} / 5</strong>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )
+      )}
+
       {/* TAB 2: MULTI-WARD ACCOUNTING & FEE CALCULATOR */}
       {activeTab === 'calculator' && (
-        <div className="space-y-6">
-          {/* Sibling Rebate Notice Banner */}
-          <div className="p-5 rounded-3xl bg-amber-50 border border-amber-200 flex items-start gap-4 text-xs text-amber-900">
+        myWards.length === 0 ? (
+          <div className="bg-white p-8 rounded-3xl border border-slate-200 text-center space-y-4 shadow-xs">
+            <div className="w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto">
+              <Calculator className="w-8 h-8" />
+            </div>
+            <div className="max-w-md mx-auto space-y-1">
+              <h3 className="text-lg font-bold text-slate-900">Multi-Ward Calculator Inactive</h3>
+              <p className="text-xs text-slate-500">
+                To calculate tuition fees, sibling rebates, and optional bus/lunch services, at least one student ward must be enrolled under this family account.
+              </p>
+            </div>
+            <div className="pt-2 flex justify-center gap-3">
+              <button
+                onClick={() => loadDemoParentWards()}
+                className="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs flex items-center space-x-2 shadow-sm"
+              >
+                <Sparkles className="w-4 h-4 text-emerald-300" />
+                <span>Load Sample Adeleke Family Wards (Demo)</span>
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Sibling Rebate Notice Banner */}
+            <div className="p-5 rounded-3xl bg-amber-50 border border-amber-200 flex items-start gap-4 text-xs text-amber-900">
             <Percent className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
             <div className="space-y-1">
               <h4 className="font-extrabold text-sm text-amber-950">
@@ -1015,6 +1199,7 @@ export const ParentPortalPage: React.FC = () => {
             </div>
           </div>
         </div>
+        )
       )}
 
       {/* TAB 3: PAYMENT HUB & CONSOLIDATED SETTLEMENT */}
@@ -1028,7 +1213,7 @@ export const ParentPortalPage: React.FC = () => {
               </span>
               <h3 className="text-lg font-black mt-0.5">Pay Entire Family Balance Together</h3>
               <p className="text-xs text-slate-400 mt-1 max-w-xl">
-                Avoid making separate payments for each child. Settle both Chidinma and Tunde's tuition with a single Paystack, transfer, or POS authorization.
+                Avoid making separate payments for each child. Settle {myWards.length > 0 ? myWards.map(w => w.firstName).join(' and ') + "'s" : 'your wards\''} tuition with a single Paystack, transfer, or POS authorization.
               </p>
             </div>
 
@@ -1066,71 +1251,94 @@ export const ParentPortalPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="space-y-3">
-              {allFamilyInvoices.map((inv) => (
-                <div 
-                  key={inv.id} 
-                  className="p-5 rounded-2xl border border-slate-200 bg-slate-50/60 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50 transition-colors"
-                >
-                  <div>
-                    <div className="flex items-center space-x-2">
-                      <span className="font-mono text-xs font-bold text-slate-800">{inv.invoiceNo}</span>
-                      <span className={`text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full ${
-                        inv.status === 'paid' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300'
-                      }`}>
-                        {inv.status}
-                      </span>
-                    </div>
-
-                    <h4 className="text-sm font-extrabold text-slate-900 mt-1">
-                      {inv.feeType}
-                    </h4>
-
-                    <div className="text-xs text-slate-600 mt-0.5 flex flex-wrap items-center gap-2">
-                      <span className="font-semibold text-emerald-800">{inv.studentName} ({inv.classOrDept})</span>
-                      <span>•</span>
-                      <span>Session: {inv.session}</span>
-                      <span>•</span>
-                      <span>Due: {inv.dueDate}</span>
-                    </div>
-
-                    {inv.paymentMethod && (
-                      <div className="text-[11px] text-emerald-700 font-semibold mt-1">
-                        Settled via {inv.paymentMethod} (Ref: {inv.transactionRef})
+            {allFamilyInvoices.length > 0 ? (
+              <div className="space-y-3">
+                {allFamilyInvoices.map((inv) => (
+                  <div 
+                    key={inv.id} 
+                    className="p-5 rounded-2xl border border-slate-200 bg-slate-50/60 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50 transition-colors"
+                  >
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <span className="font-mono text-xs font-bold text-slate-800">{inv.invoiceNo}</span>
+                        <span className={`text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full ${
+                          inv.status === 'paid' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300'
+                        }`}>
+                          {inv.status}
+                        </span>
                       </div>
-                    )}
-                  </div>
 
-                  <div className="flex items-center space-x-4 shrink-0">
-                    <div className="text-right">
-                      <div className="text-xs text-slate-500">Amount Billed</div>
-                      <div className="text-sm font-bold text-slate-900">₦{inv.amount.toLocaleString()}</div>
-                      {inv.balance > 0 && (
-                        <div className="text-xs font-bold text-rose-600">Balance: ₦{inv.balance.toLocaleString()}</div>
+                      <h4 className="text-sm font-extrabold text-slate-900 mt-1">
+                        {inv.feeType}
+                      </h4>
+
+                      <div className="text-xs text-slate-600 mt-0.5 flex flex-wrap items-center gap-2">
+                        <span className="font-semibold text-emerald-800">{inv.studentName} ({inv.classOrDept})</span>
+                        <span>•</span>
+                        <span>Session: {inv.session}</span>
+                        <span>•</span>
+                        <span>Due: {inv.dueDate}</span>
+                      </div>
+
+                      {inv.paymentMethod && (
+                        <div className="text-[11px] text-emerald-700 font-semibold mt-1">
+                          Settled via {inv.paymentMethod} (Ref: {inv.transactionRef})
+                        </div>
                       )}
                     </div>
 
-                    {inv.balance > 0 ? (
-                      <button
-                        onClick={() => handleOpenPay(inv)}
-                        className="px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs flex items-center space-x-1.5 shadow-md shadow-emerald-700/20 transition-all"
-                      >
-                        <CreditCard className="w-4 h-4" />
-                        <span>Pay ₦{inv.balance.toLocaleString()}</span>
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => handleOpenReceipt(inv)}
-                        className="px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-slate-800 font-bold text-xs hover:bg-slate-50 flex items-center space-x-1.5 shadow-xs transition-all"
-                      >
-                        <Printer className="w-3.5 h-3.5 text-slate-600" />
-                        <span>View Stamped Receipt</span>
-                      </button>
-                    )}
+                    <div className="flex items-center space-x-4 shrink-0">
+                      <div className="text-right">
+                        <div className="text-xs text-slate-500">Amount Billed</div>
+                        <div className="text-sm font-bold text-slate-900">₦{inv.amount.toLocaleString()}</div>
+                        {inv.balance > 0 && (
+                          <div className="text-xs font-bold text-rose-600">Balance: ₦{inv.balance.toLocaleString()}</div>
+                        )}
+                      </div>
+
+                      {inv.balance > 0 ? (
+                        <button
+                          onClick={() => handleOpenPay(inv)}
+                          className="px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs flex items-center space-x-1.5 shadow-md shadow-emerald-700/20 transition-all"
+                        >
+                          <CreditCard className="w-4 h-4" />
+                          <span>Pay ₦{inv.balance.toLocaleString()}</span>
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleOpenReceipt(inv)}
+                          className="px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-slate-800 font-bold text-xs hover:bg-slate-50 flex items-center space-x-1.5 shadow-xs transition-all"
+                        >
+                          <Printer className="w-3.5 h-3.5 text-slate-600" />
+                          <span>View Stamped Receipt</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-8 text-center text-xs text-slate-500 bg-slate-50 rounded-2xl border border-dashed border-slate-200 space-y-3">
+                <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 mx-auto">
+                  <Receipt className="w-6 h-6" />
                 </div>
-              ))}
-            </div>
+                <div>
+                  <h4 className="font-bold text-slate-800 text-sm">No Pending or Historical Invoices</h4>
+                  <p className="mt-0.5">Official bursary invoices are issued by the Chief Bursar at the commencement of each academic term.</p>
+                </div>
+                {myWards.length === 0 && (
+                  <div className="pt-1">
+                    <button
+                      onClick={() => loadDemoParentWards()}
+                      className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs inline-flex items-center space-x-2"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-emerald-300" />
+                      <span>Load Sample Adeleke Family Invoices (Demo)</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -1457,6 +1665,124 @@ export const ParentPortalPage: React.FC = () => {
         </div>
       )}
 
+      {/* TAB 5: PARENT & GUARDIAN REGISTER DIRECTORY */}
+      {activeTab === 'directory' && (
+        <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+            <div>
+              <div className="flex items-center space-x-2">
+                <span className="p-1.5 rounded-lg bg-purple-100 text-purple-700">
+                  <Users className="w-4 h-4" />
+                </span>
+                <h3 className="text-base font-extrabold text-slate-900">
+                  Parent & Guardian Community Register
+                </h3>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                Directory of all registered parents and guardians across nursery, primary, and secondary tiers.
+              </p>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <span className="text-xs font-bold text-purple-900 bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-xl">
+                {families.length} {families.length === 1 ? 'Registered Family' : 'Registered Families'}
+              </span>
+            </div>
+          </div>
+
+          {families.length === 0 ? (
+            <div className="text-center py-12 space-y-4">
+              <div className="w-16 h-16 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center mx-auto">
+                <Users className="w-8 h-8" />
+              </div>
+              <div className="max-w-md mx-auto space-y-1">
+                <h4 className="text-base font-bold text-slate-900">No Parent Accounts Registered Yet</h4>
+                <p className="text-xs text-slate-500">
+                  Parents are automatically added to this directory when student scholars are admitted with their guardian details.
+                </p>
+              </div>
+              <div className="pt-2 flex justify-center gap-3">
+                <button
+                  onClick={() => loadDemoParentWards()}
+                  className="px-5 py-2.5 rounded-xl bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs flex items-center space-x-2 shadow-sm"
+                >
+                  <Sparkles className="w-4 h-4 text-purple-200" />
+                  <span>Load Sample Adeleke Family Wards (Demo)</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {families.map((fam, idx) => (
+                <div
+                  key={idx}
+                  className="p-5 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-all flex flex-col justify-between space-y-3"
+                >
+                  <div>
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center font-black text-sm">
+                          {fam.guardianName[0] || 'P'}
+                        </div>
+                        <div>
+                          <h4 className="font-extrabold text-sm text-slate-900">{fam.guardianName}</h4>
+                          <span className="text-[11px] text-slate-500 font-medium">{fam.wards.length} {fam.wards.length === 1 ? 'Enrolled Child' : 'Enrolled Children'}</span>
+                        </div>
+                      </div>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                        fam.allPaid ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                      }`}>
+                        {fam.allPaid ? 'Cleared' : `₦${fam.totalBalance.toLocaleString()} Due`}
+                      </span>
+                    </div>
+
+                    <div className="mt-3 space-y-1.5 text-xs text-slate-600 bg-white p-3 rounded-xl border border-slate-200/80">
+                      <div className="flex items-center space-x-2 text-[11px]">
+                        <Phone className="w-3 h-3 text-slate-400" />
+                        <span>{fam.phone}</span>
+                      </div>
+                      <div className="flex items-center space-x-2 text-[11px]">
+                        <Mail className="w-3 h-3 text-slate-400" />
+                        <span className="truncate">{fam.email}</span>
+                      </div>
+                    </div>
+
+                    <div className="mt-3">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                        Enrolled Scholars:
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {fam.wards.map(w => (
+                          <span key={w.id} className="text-[11px] bg-slate-200/80 px-2 py-0.5 rounded-md font-medium text-slate-800">
+                            {w.firstName} {w.lastName} ({w.classOrDept})
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-200/80 flex items-center justify-between">
+                    <div className="text-[11px] text-slate-500">
+                      Total Due: <strong className="text-slate-900">₦{fam.totalBalance.toLocaleString()}</strong>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setSelectedGuardian(fam.guardianName);
+                        setActiveTab('overview');
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs flex items-center space-x-1 transition-colors"
+                    >
+                      <span>View Family Ledger</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* PARENT PAYMENT HUB MODAL (PAYSTACK, VIRTUAL TRANSFER, POS, BANKS) */}
       {showPaymentModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
@@ -1489,7 +1815,7 @@ export const ParentPortalPage: React.FC = () => {
               <div>
                 <span className="text-slate-400 block text-[10px]">Beneficiary / Scholars</span>
                 <strong className="text-slate-900">
-                  {isConsolidatedPayment ? 'Adeleke Family (Chidinma & Tunde)' : `${selectedInvoice?.studentName} (${selectedInvoice?.admissionNo})`}
+                  {isConsolidatedPayment ? `${activeFamilyName} (${myWards.map(w => w.firstName).join(' & ') || 'Wards'})` : `${selectedInvoice?.studentName} (${selectedInvoice?.admissionNo})`}
                 </strong>
                 <div className="text-[11px] text-slate-500">
                   {isConsolidatedPayment ? 'All Terminal Tuition & Levies' : selectedInvoice?.feeType}
@@ -1858,7 +2184,7 @@ export const ParentPortalPage: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-400 block">Payer (Parent/Guardian):</span>
-                  <strong className="text-slate-900">Chief Oladipo Adeleke</strong>
+                  <strong className="text-slate-900">{activeFamilyName}</strong>
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-400 block">Enrolled Scholar(s):</span>
@@ -1950,11 +2276,11 @@ export const ParentPortalPage: React.FC = () => {
                 <span className="text-[10px] font-black uppercase tracking-widest text-emerald-900">
                   OFFICIAL EXAMINATION CLEARANCE PASS
                 </span>
-                <h4 className="text-base font-black text-emerald-950">
-                  ADELEKE FAMILY (CHIDINMA & TUNDE)
+                <h4 className="text-base font-black text-emerald-950 uppercase">
+                  {activeFamilyName} ({myWards.map(w => w.firstName).join(' & ').toUpperCase() || 'ENROLLED SCHOLARS'})
                 </h4>
                 <div className="text-xs text-emerald-800 leading-relaxed font-medium">
-                  This certifies that <strong>Chidinma Adeleke (Basic 4)</strong> and <strong>Tunde Bakare (SSS 3)</strong> are officially cleared in fee standing for the {settings.currentSession} academic session ({settings.currentTermOrSemester}). All examination tickets, lab access, and CBT logins are hereby fully validated.
+                  This certifies that <strong>{myWards.length > 0 ? myWards.map(w => `${w.firstName} ${w.lastName} (${w.classOrDept})`).join(' and ') : 'Enrolled Scholars'}</strong> are officially cleared in fee standing for the {settings.currentSession} academic session ({settings.currentTermOrSemester}). All examination tickets, lab access, and CBT logins are hereby fully validated.
                 </div>
               </div>
 
@@ -1965,7 +2291,7 @@ export const ParentPortalPage: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-400 block">Parent / Guardian:</span>
-                  <strong className="text-slate-900">Chief Oladipo Adeleke</strong>
+                  <strong className="text-slate-900">{activeFamilyName}</strong>
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-400 block">Issue Date:</span>

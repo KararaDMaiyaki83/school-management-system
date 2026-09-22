@@ -53,10 +53,191 @@ export const mockUsers: User[] = [
     avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
     identifierId: "SUPER-001",
     officeTitle: "Office of the Director General / Head of School"
+  },
+  {
+    id: "usr_parent",
+    name: "Chief Oladipo Adeleke",
+    email: "parent@apexroyal.edu.ng",
+    role: "parent",
+    tier: "all",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+    identifierId: "PAR-2026",
+    wardIds: ["std_01", "std_04"],
+    officeTitle: "Parent / Guardian Council Member"
   }
 ];
 
 export const mockStudents: Student[] = [];
+
+export const sampleDemoWards: Student[] = [
+  {
+    id: "std_01",
+    admissionNo: "ARA/PRI/2024/042",
+    firstName: "Chidinma",
+    lastName: "Adeleke",
+    gender: "Female",
+    dob: "2016-04-12",
+    tier: "primary",
+    classOrDept: "Basic 4 Gold",
+    armOrStream: "Gold Arm",
+    stateOfOrigin: "Oyo State",
+    guardianName: "Chief Oladipo Adeleke",
+    guardianPhone: "+234 803 123 4567",
+    guardianEmail: "parent@apexroyal.edu.ng",
+    feeStatus: "paid",
+    feeBalance: 0,
+    termAverage: 88.4,
+    attendanceRate: 97,
+    status: "active",
+    avatarUrl: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=150&auto=format&fit=crop&q=80"
+  },
+  {
+    id: "std_04",
+    admissionNo: "ARA/SEC/2022/108",
+    firstName: "Tunde",
+    lastName: "Bakare",
+    gender: "Male",
+    dob: "2009-08-22",
+    tier: "senior_sec",
+    classOrDept: "SSS 3 Science A",
+    armOrStream: "Science Stream A",
+    stateOfOrigin: "Ogun State",
+    guardianName: "Chief Oladipo Adeleke",
+    guardianPhone: "+234 803 123 4567",
+    guardianEmail: "parent@apexroyal.edu.ng",
+    feeStatus: "partial",
+    feeBalance: 45000,
+    termAverage: 91.2,
+    attendanceRate: 99,
+    status: "active",
+    avatarUrl: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80"
+  }
+];
+
+export const sampleDemoGrades: GradeRecord[] = [
+  {
+    id: "grd_01",
+    studentId: "std_01",
+    studentName: "Chidinma Adeleke",
+    admissionNo: "ARA/PRI/2024/042",
+    tier: "primary",
+    classOrDept: "Basic 4 Gold",
+    subjectCode: "MTH-PRI",
+    subjectName: "Mathematics & Quantitative Reasoning",
+    ca1Score: 18,
+    ca2Score: 19,
+    examScore: 54,
+    totalScore: 91,
+    grade: "A1",
+    remarks: "Exceptional grasp of mental numeracy and word logic.",
+    session: "2026/2027",
+    termOrSemester: "First Term",
+    psychomotor: {
+      punctuality: 5,
+      neatness: 5,
+      politeness: 5,
+      attentiveness: 5,
+      sportsAndGym: 4
+    }
+  },
+  {
+    id: "grd_02",
+    studentId: "std_01",
+    studentName: "Chidinma Adeleke",
+    admissionNo: "ARA/PRI/2024/042",
+    tier: "primary",
+    classOrDept: "Basic 4 Gold",
+    subjectCode: "ENG-PRI",
+    subjectName: "English Studies & Phonics",
+    ca1Score: 19,
+    ca2Score: 17,
+    examScore: 52,
+    totalScore: 88,
+    grade: "A1",
+    remarks: "Speaks with clarity and exhibits high comprehension.",
+    session: "2026/2027",
+    termOrSemester: "First Term"
+  },
+  {
+    id: "grd_03",
+    studentId: "std_04",
+    studentName: "Tunde Bakare",
+    admissionNo: "ARA/SEC/2022/108",
+    tier: "senior_sec",
+    classOrDept: "SSS 3 Science A",
+    subjectCode: "PHY-SSS",
+    subjectName: "Physics & Applied Mechanics",
+    ca1Score: 19,
+    ca2Score: 20,
+    examScore: 56,
+    totalScore: 95,
+    grade: "A1",
+    remarks: "Distinction standard. Excellent laboratory technique and calculations.",
+    session: "2026/2027",
+    termOrSemester: "First Term"
+  },
+  {
+    id: "grd_04",
+    studentId: "std_04",
+    studentName: "Tunde Bakare",
+    admissionNo: "ARA/SEC/2022/108",
+    tier: "senior_sec",
+    classOrDept: "SSS 3 Science A",
+    subjectCode: "CHM-SSS",
+    subjectName: "Chemistry & Qualitative Analysis",
+    ca1Score: 18,
+    ca2Score: 18,
+    examScore: 53,
+    totalScore: 89,
+    grade: "A1",
+    remarks: "Very solid grasp of organic reaction pathways and volumetric analysis.",
+    session: "2026/2027",
+    termOrSemester: "First Term"
+  }
+];
+
+export const sampleDemoInvoices: InvoiceRecord[] = [
+  {
+    id: "inv_01",
+    invoiceNo: "INV-NG-2026-0041",
+    studentId: "std_01",
+    studentName: "Chidinma Adeleke",
+    admissionNo: "ARA/PRI/2024/042",
+    tier: "primary",
+    feeType: "Primary School Tuition & Academic Materials",
+    amount: 85000,
+    amountPaid: 85000,
+    balance: 0,
+    status: "paid",
+    session: "2026/2027",
+    termOrSemester: "First Term",
+    dueDate: "2026-09-30",
+    transactionRef: "PSK_NG_9982140",
+    paymentMethod: "Paystack Card Checkout",
+    receiptDate: "2026-09-04",
+    clearedByOffice: "Office of the Chief Bursar"
+  },
+  {
+    id: "inv_04",
+    invoiceNo: "INV-NG-2026-0115",
+    studentId: "std_04",
+    studentName: "Tunde Bakare",
+    admissionNo: "ARA/SEC/2022/108",
+    tier: "senior_sec",
+    feeType: "SSS 3 WAEC/NECO Examination Registration & Tuition",
+    amount: 145000,
+    amountPaid: 100000,
+    balance: 45000,
+    status: "unpaid",
+    session: "2026/2027",
+    termOrSemester: "First Term",
+    dueDate: "2026-10-31",
+    transactionRef: "NIP_TRF_4418291",
+    paymentMethod: "Dedicated Virtual Bank Transfer (Wema Bank Titan)",
+    receiptDate: "2026-09-10",
+    clearedByOffice: "Office of the Chief Bursar"
+  }
+];
 
 export const mockSubjects: SubjectOrCourse[] = [
   // Primary Wing (NERDC Standard)

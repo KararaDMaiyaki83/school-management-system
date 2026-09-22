@@ -155,6 +155,8 @@ export interface GradeRecord {
   gradePoint?: number; // 5.0 scale for tertiary
   creditUnits?: number;
   remarks: string;
+  session?: string;
+  termOrSemester?: string;
   psychomotor?: {
     punctuality: number; // 1 to 5
     neatness: number;

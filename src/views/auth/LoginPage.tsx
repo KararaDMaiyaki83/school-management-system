@@ -45,6 +45,14 @@ export const LoginPage: React.FC = () => {
       icon: ShieldCheck,
       color: 'bg-emerald-700 text-white hover:bg-emerald-800',
       email: 'admin@apexroyal.edu.ng'
+    },
+    {
+      id: 'usr_parent',
+      roleName: 'Parent / Guardian Portal',
+      sub: 'Academic Monitoring & Paystack Fees',
+      icon: HeartHandshake,
+      color: 'bg-rose-700 text-white hover:bg-rose-800',
+      email: 'parent@apexroyal.edu.ng'
     }
   ];
 
@@ -57,7 +65,7 @@ export const LoginPage: React.FC = () => {
     setErrorMessage('');
     const success = login(identifier.trim());
     if (!success) {
-      setErrorMessage('Invalid credentials or unregistered account. Only GetoCore Central Admin, School Super Admins, and officially enrolled school personnel can sign in.');
+      setErrorMessage('Invalid credentials or unregistered account. Only GetoCore Central Admin, School Super Admins, and authorized Parents/Guardians or school personnel can sign in.');
     }
   };
 
@@ -178,14 +186,14 @@ export const LoginPage: React.FC = () => {
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-700 mr-1.5" />
-                Administrative Access Only
+                Authorized Portals & Access
               </span>
               <span className="text-[11px] text-emerald-800 font-semibold bg-emerald-100/70 px-2 py-0.5 rounded-md">
-                School Onboarding
+                Production Ready
               </span>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-1 gap-2.5">
               {administrativeAccounts.map((acc) => {
                 const Icon = acc.icon;
                 const isSelected = selectedDemoRole === acc.id;
@@ -216,7 +224,7 @@ export const LoginPage: React.FC = () => {
             <div className="mt-3 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[11px] text-slate-600 flex items-start space-x-2">
               <Lock className="w-3.5 h-3.5 text-emerald-700 shrink-0 mt-0.5" />
               <span>
-                Standard student, parent, and teacher demo logins have been closed. School Super Admins create and issue login credentials for their staff, teachers, and enrolled students.
+                GetoCore Central Admin, School Super Admins, and Parent/Guardian Portal accounts are ready below. Newly onboarded schools issue logins for their teachers and staff via Staff Management.
               </span>
             </div>
           </div>
